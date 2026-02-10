@@ -1,4 +1,4 @@
-import { OrderStatus, BaseEntity } from '@/shared/types';
+import { OrderStatus, BaseEntity } from "@/shared/types";
 
 // API Request Types
 export interface OrderItemRequest {
@@ -35,13 +35,10 @@ export interface OrderItemResponse extends BaseEntity {
 }
 
 export interface OrderListResponse extends BaseEntity {
+  orderId: number;
   orderNumber: string;
-  shopId: number;
-  shopName: string;
-  userId: number;
   totalPrice: number;
   status: OrderStatus;
-  deliveryDate: string;
   createdAt: string;
 }
 

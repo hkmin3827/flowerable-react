@@ -1,61 +1,74 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { useAuthStore } from '@/features/auth/store';
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import { useAuthStore } from "@/features/auth/store";
 
 // Layouts
-import { MainLayout } from './layouts/MainLayout';
-import { ShopLayout } from './layouts/ShopLayout';
-import { AdminLayout } from './layouts/AdminLayout';
+import { MainLayout } from "./layouts/MainLayout";
+import { ShopLayout } from "./layouts/ShopLayout";
+import { AdminLayout } from "./layouts/AdminLayout";
 
 // Pages - Auth
-import { LoginPage } from '@/pages/auth/LoginPage';
-import { SignupPage } from '@/pages/auth/SignupPage';
+import { LoginPage } from "@/pages/auth/LoginPage";
+import { SignupPage } from "@/pages/auth/SignupPage";
+import { OAuthCompleteProfile } from "@/pages/auth/OAuthCompleteProfile";
 
 // Pages - User
-import { HomePage } from '@/pages/user/HomePage';
-import { FlowerListPage } from '@/pages/user/FlowerListPage';
-import { ShopListPage } from '@/pages/user/ShopListPage';
-import { ShopDetailPage } from '@/pages/user/ShopDetailPage';
-import { CartPage } from '@/pages/user/CartPage';
-import { OrderListPage } from '@/pages/user/OrderListPage';
-import { OrderDetailPage } from '@/pages/user/OrderDetailPage';
-import { UserProfilePage } from '@/pages/user/UserProfilePage';
+import { HomePage } from "@/pages/user/HomePage";
+import { FlowerListPage } from "@/pages/user/FlowerListPage";
+import { ShopListPage } from "@/pages/user/ShopListPage";
+import { ShopDetailPage } from "@/pages/user/ShopDetailPage";
+import { CartPage } from "@/pages/user/CartPage";
+import { OrderListPage } from "@/pages/user/OrderListPage";
+import { OrderDetailPage } from "@/pages/user/OrderDetailPage";
+import { UserProfilePage } from "@/pages/user/UserProfilePage";
 
 // Pages - Shop
-import { ShopDashboardPage } from '@/pages/shop/ShopDashboardPage';
-import { ShopOrderListPage } from '@/pages/shop/ShopOrderListPage';
-import { ShopFlowerManagePage } from '@/pages/shop/ShopFlowerManagePage';
-import { ShopProfilePage } from '@/pages/shop/ShopProfilePage';
+import { ShopDashboardPage } from "@/pages/shop/ShopDashboardPage";
+import { ShopOrderListPage } from "@/pages/shop/ShopOrderListPage";
+import { ShopFlowerManagePage } from "@/pages/shop/ShopFlowerManagePage";
+import { ShopProfilePage } from "@/pages/shop/ShopProfilePage";
 
 // Pages - Admin
-import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
+import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
+import OAuthCallback from "@/pages/auth/OAuthCallback";
 
 // Protected Route Component
-const ProtectedRoute = ({ children, allowedRoles }: { 
-  children: React.ReactNode; 
-  allowedRoles?: string[] 
+const ProtectedRoute = ({
+  children,
+  allowedRoles,
+}: {
+  children: React.ReactNode;
+  allowedRoles?: string[];
 }) => {
   const { isAuthenticated, user } = useAuthStore();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  
+
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
 export const router = createBrowserRouter([
   // Public routes
   {
-    path: '/login',
+    path: "/login",
     element: <LoginPage />,
   },
   {
-    path: '/signup',
+    path: "/signup",
     element: <SignupPage />,
+  },
+  {
+    path: "/oauth/callback",
+    element: <OAuthCallback />,
+  },
+  {
+    path: "/oauth/complete",
+    element: <OAuthCompleteProfile />,
   },
 
   // User routes
@@ -63,49 +76,49 @@ export const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       {
-        path: '/',
+        path: "/",
         element: <HomePage />,
       },
       {
-        path: '/flowers',
+        path: "/flowers",
         element: <FlowerListPage />,
       },
       {
-        path: '/shops',
+        path: "/shops",
         element: <ShopListPage />,
       },
       {
-        path: '/shops/:shopId',
+        path: "/shops/:shopId",
         element: <ShopDetailPage />,
       },
       {
-        path: '/cart',
+        path: "/cart",
         element: (
-          <ProtectedRoute allowedRoles={['USER']}>
+          <ProtectedRoute allowedRoles={["USER"]}>
             <CartPage />
           </ProtectedRoute>
         ),
       },
       {
-        path: '/orders',
+        path: "/orders",
         element: (
-          <ProtectedRoute allowedRoles={['USER']}>
+          <ProtectedRoute allowedRoles={["ROLE_USER"]}>
             <OrderListPage />
           </ProtectedRoute>
         ),
       },
       {
-        path: '/orders/:orderId',
+        path: "/orders/:orderId",
         element: (
-          <ProtectedRoute allowedRoles={['USER']}>
+          <ProtectedRoute allowedRoles={["USER"]}>
             <OrderDetailPage />
           </ProtectedRoute>
         ),
       },
       {
-        path: '/profile',
+        path: "/profile",
         element: (
-          <ProtectedRoute allowedRoles={['USER']}>
+          <ProtectedRoute allowedRoles={["USER"]}>
             <UserProfilePage />
           </ProtectedRoute>
         ),
@@ -115,27 +128,27 @@ export const router = createBrowserRouter([
 
   // Shop routes
   {
-    path: '/shop',
+    path: "/shop",
     element: (
-      <ProtectedRoute allowedRoles={['SHOP']}>
+      <ProtectedRoute allowedRoles={["SHOP"]}>
         <ShopLayout />
       </ProtectedRoute>
     ),
     children: [
       {
-        path: 'dashboard',
+        path: "dashboard",
         element: <ShopDashboardPage />,
       },
       {
-        path: 'orders',
+        path: "orders",
         element: <ShopOrderListPage />,
       },
       {
-        path: 'flowers',
+        path: "flowers",
         element: <ShopFlowerManagePage />,
       },
       {
-        path: 'profile',
+        path: "profile",
         element: <ShopProfilePage />,
       },
     ],
@@ -143,9 +156,9 @@ export const router = createBrowserRouter([
 
   // Admin routes
   {
-    path: '/admin',
+    path: "/admin",
     element: (
-      <ProtectedRoute allowedRoles={['ADMIN']}>
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
         <AdminLayout />
       </ProtectedRoute>
     ),

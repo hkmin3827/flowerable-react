@@ -1,41 +1,93 @@
-import { apiClient } from "@/shared/api";
+import { axiosInstance } from "@/shared/api/axios";
 import {
   LoginRequest,
   UserSignupRequest,
   ShopSignupRequest,
-  OAuth2LoginRequest,
   AuthResponse,
+  OAuth2CompleteRequest,
+  OAuthTokenExchangeRequest,
+  OAuthCompleteRequest,
 } from "./types";
 
 export const authApi = {
   // 이메일 로그인
-  login: (data: LoginRequest) =>
-    apiClient.post<AuthResponse>("/auth/login", data),
+  login: async (data: LoginRequest): Promise<AuthResponse> => {
+    const res = await axiosInstance.post<AuthResponse>("/auth/login", data);
+    return res.data;
+  },
 
   // 일반 회원가입
-  signupUser: (data: UserSignupRequest) =>
-    apiClient.post<AuthResponse>("/auth/users/signup", data),
+  signupUser: async (data: UserSignupRequest): Promise<AuthResponse> => {
+    const res = await axiosInstance.post<AuthResponse>(
+      "/auth/users/signup",
+      data,
+    );
+    return res.data;
+  },
 
   // 샵 회원가입
-  signupShop: (data: ShopSignupRequest) =>
-    apiClient.post<AuthResponse>("/auth/shos/signup", data),
+  signupShop: async (data: ShopSignupRequest): Promise<AuthResponse> => {
+    const res = await axiosInstance.post<AuthResponse>(
+      "/auth/shops/signup",
+      data,
+    );
+    return res.data;
+  },
 
-  // OAuth2 로그인
-  oauth2Login: (data: OAuth2LoginRequest) =>
-    apiClient.post<AuthResponse>("/auth/oauth2/login", data),
+  exchangeOAuthToken: async (
+    data: OAuthTokenExchangeRequest,
+  ): Promise<AuthResponse> => {
+    try {
+      const response = await axiosInstance.post("/auth/oauth/token", data);
+
+      return response.data;
+    } catch (error: any) {
+      console.error("🌐 API Error - exchangeOAuthToken:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      throw error;
+    }
+  },
+  /**
+   * OAuth 추가 정보 입력 완료
+   */
+  completeOAuthSignup: async (
+    data: OAuthCompleteRequest,
+  ): Promise<AuthResponse> => {
+    const response = await axiosInstance.post("/auth/oauth/complete", data);
+    return response.data;
+  },
+
+  oauth2ProfileComplete: async (
+    data: OAuth2CompleteRequest,
+  ): Promise<AuthResponse> => {
+    const res = await axiosInstance.post<AuthResponse>(
+      "/auth/oauth2/complete",
+      data,
+    );
+    return res.data;
+  },
 
   // 로그아웃
-  logout: () => apiClient.post("/auth/logout"),
+  logout: () => axiosInstance.post("/auth/logout"),
 
   // 토큰 리프레시
-  refreshToken: (refreshToken: string) =>
-    apiClient.post<AuthResponse>("/auth/refresh", { refreshToken }),
+  refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
+    const res = await axiosInstance.post<AuthResponse>("/auth/reissue", {
+      refreshToken,
+    });
+    return res.data;
+  },
 
   // 이메일 중복 체크
   checkEmail: (email: string) =>
-    apiClient.get<{ available: boolean }>(`/auth/check-email?email=${email}`),
+    axiosInstance.get<{ available: boolean }>(
+      `/auth/check-email?email=${email}`,
+    ),
 
   // 회원 탈퇴
   withdraw: (password: string) =>
-    apiClient.delete("/auth/withdraw", { data: { password } }),
+    axiosInstance.delete("/auth/withdraw", { data: { password } }),
 };

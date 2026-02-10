@@ -1,11 +1,9 @@
+import { useAuthStore } from "@/features/auth/store";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { ApiError } from "@/shared/types";
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 // Axios instance 생성
-export const apiClient = axios.create({
-  baseURL: BASE_URL,
+export const axiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -13,50 +11,68 @@ export const apiClient = axios.create({
 });
 
 // Request interceptor
-apiClient.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("accessToken");
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const accessToken = useAuthStore.getState().accessToken;
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
   (error: AxiosError) => {
+    console.error("❌ Axios Request Error:", error);
     return Promise.reject(error);
   },
 );
 
-// Response interceptor
-apiClient.interceptors.response.use(
-  (response) => response.data, // 자동으로 data 추출
-  async (error: AxiosError<ApiError>) => {
-    if (error.response?.status === 401) {
-      // 토큰 만료 시 리프레시 시도
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (refreshToken) {
-        try {
-          const { data } = await axios.post(`${BASE_URL}/auth/refresh`, {
-            refreshToken,
-          });
-          localStorage.setItem("accessToken", data.accessToken);
-          localStorage.setItem("refreshToken", data.refreshToken);
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    const status = error.response?.status;
+    const message = error.response?.data?.message;
 
-          // 원래 요청 재시도
-          if (error.config) {
-            error.config.headers.Authorization = `Bearer ${data.accessToken}`;
-            return axios(error.config);
-          }
-        } catch (refreshError) {
-          // 리프레시 실패 시 로그아웃
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-          window.location.href = "/login";
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const { refreshToken, accountStatus } = useAuthStore.getState();
+
+        if (!refreshToken) {
+          throw new Error("No refresh token");
         }
-      } else {
-        window.location.href = "/login";
+
+        const res = await axiosInstance.post("/auth/reissue", null, {
+          headers: {
+            "X-Refresh-Token": refreshToken,
+          },
+        });
+
+        const {
+          accessToken,
+          refreshToken: newRefreshToken,
+          accountStatus: newAccountStatus,
+        } = res.data;
+        useAuthStore.getState().updateTokens({
+          accessToken,
+          refreshToken: newRefreshToken,
+          accountStatus: newAccountStatus ?? accountStatus,
+        });
+
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+        return axiosInstance(originalRequest);
+      } catch (reissueError) {
+        useAuthStore.getState().clearAuth();
+        // window.location.href = "/login";
+        return Promise.reject(reissueError);
       }
     }
 
-    return Promise.reject(error.response?.data || error.message);
+    if (status === 403) {
+      alert(message ?? "접근 권한이 없습니다.");
+      return Promise.reject(error);
+    }
+    alert(message ?? "알 수 없는 오류가 발생했습니다.");
+    return Promise.reject(error);
   },
 );

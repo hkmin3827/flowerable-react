@@ -35,7 +35,6 @@ const UserSignupForm = () => {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<UserSignupRequest>();
   const { mutate: signup, isPending } = useSignupUser();
 
@@ -91,15 +90,16 @@ const UserSignupForm = () => {
 };
 
 const ShopSignupForm = () => {
+  const methods = useForm<ShopSignupRequest>();
   const {
     register,
     handleSubmit,
     control,
     setValue,
     formState: { errors },
-  } = useForm<ShopSignupRequest>();
+  } = methods;
+
   const { mutate: signup, isPending } = useSignupShop();
-  const methods = useForm();
 
   const onSubmit = (data: ShopSignupRequest) => {
     signup(data);
@@ -129,10 +129,10 @@ const ShopSignupForm = () => {
       <InputGroup>
         <Label>연락처</Label>
         <Input
-          {...register("phone", { required: true })}
+          {...register("telnum", { required: true })}
           placeholder="010-0000-0000"
         />
-        {errors.phone && <ErrorText>전화번호를 입력해주세요</ErrorText>}
+        {errors.telnum && <ErrorText>전화번호를 입력해주세요</ErrorText>}
       </InputGroup>
 
       <InputGroup>
@@ -159,9 +159,11 @@ const ShopSignupForm = () => {
       </InputGroup> */}
 
       <RegionSelector
-        control={methods.control}
-        errors={methods.formState.errors}
-        setValue={methods.setValue}
+        control={control}
+        errors={errors}
+        setValue={setValue}
+        regionCode="regionCode"
+        districtCode="districtCode"
       />
 
       <InputGroup>

@@ -1,4 +1,4 @@
-import { Role, Provider } from "@/shared/types";
+import { Role, Provider, AccountStatus } from "@/shared/types";
 
 // API Request Types
 
@@ -29,17 +29,27 @@ export interface ShopSignupRequest {
 
 export interface OAuth2LoginRequest {
   provider: Provider;
-  code: string;
+  providerId: string;
+  email?: string;
+  name?: string;
 }
 
-// API Response Types
-export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  role: Role;
+export interface OAuth2CompleteRequest {
   accountId: number;
-  name: string;
   email: string;
+  telnum: string;
+}
+
+export interface AuthResponse {
+  accessToken: string | null; // TEMP 대비
+  refreshToken: string | null; // TEMP 대비
+  role: Role;
+  id: number;
+  name: string | null;
+  telnum: string | null;
+  profileImgUrl: string | null;
+  accountStatus: AccountStatus;
+  provider: Provider;
 }
 
 // Domain Types (UI에서 사용)
@@ -47,7 +57,18 @@ export interface UserInfo {
   id: number;
   name: string;
   role: Role;
-  email: string;
-  profileImgUrl: string;
+  profileImgUrl: string | null;
   provider: Provider;
+}
+
+export interface OAuthTokenExchangeRequest {
+  code: string;
+  provider: string;
+}
+
+export interface OAuthCompleteRequest {
+  accountId: number;
+  email: string;
+  telnum: string;
+  name: string;
 }

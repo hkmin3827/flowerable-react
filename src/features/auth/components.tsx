@@ -4,9 +4,9 @@ import styled from "styled-components";
 import { useLogin } from "./hooks";
 import { LoginRequest } from "./types";
 import { Role } from "@/shared/types";
-import GoogleIcon from "../../icons/googlelogo.svg";
-import KakaoLogin from "../../icons/kakao_login_large_narrow.png";
-import NaverLogin from "../../icons/NAVER_login_Dark_EN_green_center_H56.png";
+import GoogleIcon from "../../images/logos/googlelogo.svg";
+import KakaoLogin from "../../images/logos/kakao_login_large_narrow.png";
+import NaverLogin from "../../images/logos/NAVER_login_Dark_EN_green_center_H56.png";
 
 interface LoginFormProps {
   role: Role;

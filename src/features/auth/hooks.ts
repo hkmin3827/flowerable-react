@@ -2,12 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "./api";
 import { useAuthStore } from "./store";
-import {
-  LoginRequest,
-  UserSignupRequest,
-  ShopSignupRequest,
-  OAuth2LoginRequest,
-} from "./types";
+import { LoginRequest, UserSignupRequest, ShopSignupRequest } from "./types";
 
 // 로그인 mutation
 export const useLogin = () => {
@@ -16,28 +11,44 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: (data: LoginRequest) => authApi.login(data),
-    onSuccess: (response) => {
+    onSuccess: (res) => {
       const {
         accessToken,
         refreshToken,
         role,
-        accountId,
+        id,
         name,
         profileImgUrl,
-      } = response;
+        accountStatus,
+        provider,
+      } = res;
 
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
+      if (accountStatus !== "ACTIVE") {
+        return;
+      }
+
+      if (!accessToken || !refreshToken || !name) {
+        throw new Error("Invalid active account response");
+      }
 
       setAuth({
         isAuthenticated: true,
-        user: { id: accountId, name, role, profileImgUrl },
+        accountStatus,
+        accessToken,
+        refreshToken,
+        user: {
+          id,
+          name,
+          role,
+          profileImgUrl: profileImgUrl ?? "../../images/profileDefaultImg.jpg",
+          provider,
+        },
       });
 
       // Role에 따라 리다이렉트
-      if (role === "SHOP") {
+      if (role === "ROLE_SHOP") {
         navigate("/shop/dashboard");
-      } else if (role === "ADMIN") {
+      } else if (role === "ROLE_ADMIN") {
         navigate("/admin");
       } else {
         navigate("/");
@@ -71,28 +82,47 @@ export const useSignupShop = () => {
 };
 
 // OAuth2 로그인 mutation
-export const useOAuth2Login = () => {
-  const navigate = useNavigate();
-  const setAuth = useAuthStore((state) => state.setAuth);
+// export const useOAuth2Login = () => {
+//   const setAuth = useAuthStore((s) => s.setAuth);
 
-  return useMutation({
-    mutationFn: (data: OAuth2LoginRequest) => authApi.oauth2Login(data),
-    onSuccess: (response) => {
-      const { accessToken, refreshToken, role, accountId, name, email } =
-        response;
+//   return useMutation({
+//     mutationFn: (data: OAuth2LoginRequest) => authApi.oauth2Login(data),
 
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
+//     onSuccess: (res) => {
+//       const {
+//         accessToken,
+//         refreshToken,
+//         role,
+//         accountId,
+//         name,
+//         profileImgUrl,
+//         accountStatus,
+//         provider,
+//       } = res;
 
-      setAuth({
-        isAuthenticated: true,
-        user: { id: accountId, name, email, role },
-      });
+//       // TEMP / SUSPENDED / DELETED → store 건드리지 않음
+//       if (accountStatus !== "ACTIVE") return;
 
-      navigate(role === "SHOP" ? "/shop/dashboard" : "/");
-    },
-  });
-};
+//       if (!accessToken || !refreshToken || !name) {
+//         throw new Error("Invalid active account response");
+//       }
+
+//       setAuth({
+//         isAuthenticated: true,
+//         accountStatus,
+//         accessToken,
+//         refreshToken,
+//         user: {
+//           id: accountId,
+//           name: name,
+//           role,
+//           profileImgUrl: profileImgUrl ?? "../../images/dprofileDefaultImg.jpg",
+//           provider,
+//         },
+//       });
+//     },
+//   });
+// };
 
 // 로그아웃 mutation
 export const useLogout = () => {

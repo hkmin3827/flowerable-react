@@ -1,12 +1,11 @@
 // 백엔드 Enum 타입들
 export type Role = "ROLE_USER" | "ROLE_SHOP" | "ROLE_ADMIN";
 export type Provider = "LOCAL" | "KAKAO" | "NAVER" | "GOOGLE";
-export type AccountStatus = "ACTIVE" | "SUSPENDED" | "WITHDRAWN";
+export type AccountStatus = "ACTIVE" | "SUSPENDED" | "DELETED" | "TEMP";
 
 export type OrderStatus =
-  | "PENDING"
-  | "CONFIRMED"
-  | "IN_PROGRESS"
+  | "REQUESTED"
+  | "ACCEPTED"
   | "READY"
   | "COMPLETED"
   | "CANCELLED";
@@ -22,7 +21,7 @@ export type Color =
   | "ORANGE"
   | "GREEN"
   | "MIXED";
-export type Season = "SPRING" | "SUMMER" | "FALL" | "WINTER" | "ALL";
+export type Season = "SPRING" | "SUMMER" | "AUTUMN" | "WINTER";
 export type Region =
   | "SEOUL"
   | "GYEONGGI"

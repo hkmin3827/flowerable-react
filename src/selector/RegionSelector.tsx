@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Control, Controller, FieldErrors } from "react-hook-form";
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  Path,
+  PathValue,
+  UseFormSetValue,
+} from "react-hook-form";
 import styled from "styled-components";
 
 interface RegionRes {
@@ -12,21 +19,21 @@ interface DistrictRes {
   description: string;
 }
 
-interface RegionSelectorProps {
-  control: Control<any>;
-  errors: FieldErrors;
-  setValue: (name: string, value: any) => void;
-  regionCode?: string;
-  districtCode?: string;
+interface RegionSelectorProps<T extends Record<string, any>> {
+  control: Control<T>;
+  errors: FieldErrors<T>;
+  setValue: UseFormSetValue<T>;
+  regionCode: Path<T>;
+  districtCode: Path<T>;
 }
 
-export default function RegionSelector({
+export default function RegionSelector<T extends Record<string, any>>({
   control,
   errors,
   setValue,
-  regionCode = "region",
-  districtCode = "district",
-}: RegionSelectorProps) {
+  regionCode,
+  districtCode,
+}: RegionSelectorProps<T>) {
   const [regions, setRegions] = useState<RegionRes[]>([]);
   const [districts, setDistricts] = useState<DistrictRes[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
@@ -45,18 +52,14 @@ export default function RegionSelector({
     if (selectedRegion) {
       fetch(`/api/regions/districts?region=${selectedRegion}`)
         .then((res) => {
-          console.log("[district fetch] status =", res.status); // ✅ 여기
           return res.json();
         })
         .then((data) => {
-          console.log("[district data] =", data); // ✅ 여기
           setDistricts(data);
         })
         .catch((err) => console.error("Failed to fetch districts:", err));
     } else {
-      console.log("[useEffect] selectedRegion is empty → reset districts");
       setDistricts([]);
-      regionCode;
     }
   }, [selectedRegion]);
 
@@ -74,10 +77,9 @@ export default function RegionSelector({
               onChange={(e) => {
                 const value = e.target.value;
 
-                console.log("[onChange] selectedRegion =", value);
                 field.onChange(value);
                 setSelectedRegion(value);
-                setValue(districtCode, "");
+                setValue(districtCode, "" as PathValue<T, typeof districtCode>);
               }}
             >
               <option value="">지역을 선택해주세요</option>
@@ -103,6 +105,7 @@ export default function RegionSelector({
           render={({ field }) => (
             <Select
               {...field}
+              value={field.value ?? ""}
               disabled={!selectedRegion || districts.length === 0}
             >
               <option value="">시/군/구를 선택해주세요</option>
