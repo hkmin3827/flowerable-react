@@ -1,80 +1,83 @@
-import { OrderStatus, BaseEntity } from "@/shared/types";
+import { Color } from "@/shared/types";
 
-// API Request Types
-export interface OrderItemRequest {
-  shopFlowerId: number;
-  quantity: number;
-  wrappingOptionId?: number;
+export enum OrderStatus {
+  REQUESTED = "REQUESTED",
+  ACCEPTED = "ACCEPTED",
+  READY = "READY",
+  COMPLETED = "COMPLETED",
+  CANCELED = "CANCELED",
 }
 
-export interface OrderCreateRequest {
-  shopId: number;
-  items: OrderItemRequest[];
-  deliveryDate: string;
-  recipientName: string;
-  recipientPhone: string;
-  deliveryAddress: string;
-  message?: string;
-}
-
-export interface OrderStatusChangeRequest {
-  status: OrderStatus;
-}
-
-// API Response Types
-export interface OrderItemResponse extends BaseEntity {
-  orderId: number;
-  shopFlowerId: number;
+export interface OrderItem {
   flowerName: string;
-  flowerImageUrl: string;
+  flowerColor: Color;
+  itemTotalPrice: number;
+  shopFlowerId: number;
   quantity: number;
-  unitPrice: number;
-  wrappingOptionId?: number;
-  wrappingOptionName?: string;
-  wrappingPrice: number;
 }
 
-export interface OrderListResponse extends BaseEntity {
+export interface OrderList {
   orderId: number;
   orderNumber: string;
-  totalPrice: number;
   status: OrderStatus;
+  totalPrice: number;
   createdAt: string;
 }
 
-export interface OrderDetailResponse extends BaseEntity {
+export interface OrderDetail {
+  orderId: number;
   orderNumber: string;
-  shopId: number;
-  shopName: string;
+  status: OrderStatus;
   userId: number;
   userName: string;
-  userPhone: string;
+  userPhoneNumber: string;
+  shopId: number;
+  shopName: string;
+  shopAddress: string;
+  shopPhoneNumber: string;
+  totalFlowerPrice: number;
   totalPrice: number;
-  status: OrderStatus;
-  deliveryDate: string;
-  recipientName: string;
-  recipientPhone: string;
-  deliveryAddress: string;
-  message?: string;
-  items: OrderItemResponse[];
+  wrappingColorName: string | null;
+  wrappingExtraPrice: number;
+  message: string | null;
   createdAt: string;
-  updatedAt: string;
+  canceledAt: string | null;
+  items: OrderItem[];
 }
 
-// Domain Types (UI용)
-export interface CartItem {
+export interface OrderCreateReq {
+  orderItems: {
+    shopFlowerId: number;
+    quantity: number;
+  }[];
+  wrappingColorName: string | null;
+  message: string | null;
+}
+
+// Shop 관련
+export interface ShopDetail {
+  shopId: number;
+  name: string;
+  address: string;
+  phoneNumber: string;
+  description: string | null;
+  latitude: number;
+  longitude: number;
+  imageUrls: string[];
+  shopFlowers: ShopFlower[];
+}
+
+export interface ShopFlower {
   shopFlowerId: number;
   flowerName: string;
-  flowerImageUrl: string;
-  quantity: number;
-  unitPrice: number;
-  wrappingOptionId?: number;
-  wrappingOptionName?: string;
-  wrappingPrice: number;
+  flowerPrice: number;
+  stockQuantity: number;
+  imageUrl: string | null;
+  availableForSale: boolean;
 }
 
-export interface OrderSummary {
-  subtotal: number;
-  wrappingTotal: number;
-  total: number;
+export interface WrappingOption {
+  shopId: number;
+  colorNames: string[];
+  price: number;
 }

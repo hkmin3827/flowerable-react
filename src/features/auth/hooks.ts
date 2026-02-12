@@ -21,6 +21,7 @@ export const useLogin = () => {
         profileImgUrl,
         accountStatus,
         provider,
+        shopStatus,
       } = res;
 
       if (accountStatus !== "ACTIVE") {
@@ -42,12 +43,13 @@ export const useLogin = () => {
           role,
           profileImgUrl: profileImgUrl ?? "../../images/profileDefaultImg.jpg",
           provider,
+          shopStatus,
         },
       });
-
-      // Role에 따라 리다이렉트
-      if (role === "ROLE_SHOP") {
+      if (role === "ROLE_SHOP" && shopStatus != "PENDING") {
         navigate("/shop/dashboard");
+      } else if (role === "ROLE_SHOP" && shopStatus == "PENDING") {
+        navigate("/shop/pending-home");
       } else if (role === "ROLE_ADMIN") {
         navigate("/admin");
       } else {
@@ -66,6 +68,21 @@ export const useSignupUser = () => {
     onSuccess: () => {
       navigate("/login");
     },
+    onError: (error: any) => {
+      const serverData = error.response?.data;
+
+      if (serverData?.message) {
+        alert(serverData.message);
+        return;
+      }
+
+      if (Array.isArray(serverData?.errors) && serverData.errors.length > 0) {
+        alert(serverData.errors[0].message);
+        return;
+      }
+
+      alert("회원가입 중 서버 오류가 발생했습니다.");
+    },
   });
 };
 
@@ -78,51 +95,23 @@ export const useSignupShop = () => {
     onSuccess: () => {
       navigate("/login");
     },
+    onError: (error: any) => {
+      const serverData = error.response?.data;
+
+      if (serverData?.message) {
+        alert(serverData.message);
+        return;
+      }
+
+      if (Array.isArray(serverData?.errors) && serverData.errors.length > 0) {
+        alert(serverData.errors[0].message);
+        return;
+      }
+
+      alert("회원가입 중 서버 오류가 발생했습니다.");
+    },
   });
 };
-
-// OAuth2 로그인 mutation
-// export const useOAuth2Login = () => {
-//   const setAuth = useAuthStore((s) => s.setAuth);
-
-//   return useMutation({
-//     mutationFn: (data: OAuth2LoginRequest) => authApi.oauth2Login(data),
-
-//     onSuccess: (res) => {
-//       const {
-//         accessToken,
-//         refreshToken,
-//         role,
-//         accountId,
-//         name,
-//         profileImgUrl,
-//         accountStatus,
-//         provider,
-//       } = res;
-
-//       // TEMP / SUSPENDED / DELETED → store 건드리지 않음
-//       if (accountStatus !== "ACTIVE") return;
-
-//       if (!accessToken || !refreshToken || !name) {
-//         throw new Error("Invalid active account response");
-//       }
-
-//       setAuth({
-//         isAuthenticated: true,
-//         accountStatus,
-//         accessToken,
-//         refreshToken,
-//         user: {
-//           id: accountId,
-//           name: name,
-//           role,
-//           profileImgUrl: profileImgUrl ?? "../../images/dprofileDefaultImg.jpg",
-//           provider,
-//         },
-//       });
-//     },
-//   });
-// };
 
 // 로그아웃 mutation
 export const useLogout = () => {

@@ -1,35 +1,76 @@
-import { ShopStatus, Region, BaseEntity } from '@/shared/types';
+import { ShopStatus, Region, Color } from "@/shared/types";
 
 // API Response Types
-export interface ShopDetailResponse extends BaseEntity {
-  name: string;
-  phone: string;
-  businessNumber: string;
-  region: Region;
-  district: string;
+export interface ShopDetailResponse {
+  id: number;
+  email: string;
+  shopName: string;
+  description: string;
+  telnum: string;
   address: string;
-  description?: string;
+  latitude: number;
+  longitude: number;
+  region: string;
+  district: string;
+  regionDesc: string;
+  districtDesc: string;
   status: ShopStatus;
-  profileImageUrl?: string;
-  rating: number;
-  reviewCount: number;
+  deletedAt: string | null;
+  registerAt: string;
+  shopFlowers: ShopFlowerResponse[];
 }
 
-export interface ShopSearchResponse {
+export interface ShopFlowerResponse {
   id: number;
-  name: string;
-  region: Region;
-  district: string;
-  address: string;
-  profileImageUrl?: string;
-  rating: number;
-  distance?: number;
+  flowerId: number;
+  flowerName: string;
+  price: number;
+  onSale: boolean;
+  colors: Color[];
+}
+
+export interface ShopImageResponse {
+  id: number;
+  imageUrl: string;
+  isThumbnail: boolean;
+  createdAt: string;
+}
+
+export interface WrappingOptionResponse {
+  colorNames: string[];
+  price: number;
 }
 
 // API Request Types
 export interface ShopUpdateRequest {
-  name?: string;
-  phone?: string;
-  address?: string;
+  shopName?: string;
   description?: string;
+  telnum?: string;
+  regionCode?: string;
+  districtCode?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface ShopFlowerRegisterRequest {
+  flowerId: number;
+  colors: Color[];
+  price: number;
+}
+
+export interface ShopFlowerUpdateRequest {
+  price?: number;
+  colors?: Color[];
+}
+
+export interface WrappingOptionRequest {
+  colorNames: string[];
+  price: number;
+}
+
+export interface FlowerOrderStats {
+  rank: number;
+  flowerName: string;
+  orderCount: number;
 }

@@ -10,13 +10,13 @@ export interface Flower {
 }
 
 export interface Shop {
-  id: number;
+  shopId: number;
   shopName: string;
   description: string;
   address: string;
   telnum: string;
-  regionDescription: string;
-  districtDescription: string;
+  regionDesc: string;
+  districtDesc: string;
 }
 
 export interface Region {

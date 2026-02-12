@@ -1,6 +1,9 @@
 import { useAuthStore } from "@/features/auth/store";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
+let isRefreshing = false;
+let refreshPromise: Promise<any> | null = null;
+
 // Axios instance 생성
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
@@ -8,6 +11,10 @@ export const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+const reissueAxios = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
 });
 
 // Request interceptor
@@ -32,29 +39,50 @@ axiosInstance.interceptors.response.use(
     const status = error.response?.status;
     const message = error.response?.data?.message;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+    if (originalRequest.url?.includes("/auth/reissue")) {
+      useAuthStore.getState().clearAuth();
+      return Promise.reject(error);
+    }
+
+    if (status === 401) {
+      if (originalRequest._retry) {
+        return Promise.reject(error);
+      }
       originalRequest._retry = true;
+      const { refreshToken, accountStatus } = useAuthStore.getState();
+
+      if (!refreshToken) {
+        useAuthStore.getState().clearAuth();
+        return Promise.reject(error);
+      }
+
       try {
-        const { refreshToken, accountStatus } = useAuthStore.getState();
-
-        if (!refreshToken) {
-          throw new Error("No refresh token");
+        if (!isRefreshing) {
+          isRefreshing = true;
+          refreshPromise = reissueAxios
+            .post("/auth/reissue", null, {
+              headers: { "X-Refresh-Token": refreshToken },
+            })
+            .finally(() => {
+              isRefreshing = false;
+              refreshPromise = null;
+            });
         }
-
-        const res = await axiosInstance.post("/auth/reissue", null, {
-          headers: {
-            "X-Refresh-Token": refreshToken,
-          },
-        });
+        const res = await refreshPromise;
 
         const {
           accessToken,
           refreshToken: newRefreshToken,
           accountStatus: newAccountStatus,
         } = res.data;
+
+        const current = useAuthStore.getState();
         useAuthStore.getState().updateTokens({
           accessToken,
-          refreshToken: newRefreshToken,
+          refreshToken: newRefreshToken ?? current.refreshToken,
           accountStatus: newAccountStatus ?? accountStatus,
         });
 
@@ -63,7 +91,6 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (reissueError) {
         useAuthStore.getState().clearAuth();
-        // window.location.href = "/login";
         return Promise.reject(reissueError);
       }
     }
@@ -72,7 +99,7 @@ axiosInstance.interceptors.response.use(
       alert(message ?? "접근 권한이 없습니다.");
       return Promise.reject(error);
     }
-    alert(message ?? "알 수 없는 오류가 발생했습니다.");
+
     return Promise.reject(error);
   },
 );

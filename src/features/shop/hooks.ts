@@ -1,22 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { shopApi } from './api';
-import { ShopUpdateRequest } from './types';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { shopApi } from "./api";
+import { ShopUpdateRequest } from "./types";
 
 export const shopKeys = {
-  all: ['shops'] as const,
-  search: (flowerIds: number[], region?: string) => 
-    [...shopKeys.all, 'search', flowerIds, region] as const,
-  detail: (shopId: number) => [...shopKeys.all, 'detail', shopId] as const,
-  myShop: () => [...shopKeys.all, 'me'] as const,
-};
-
-// 샵 검색
-export const useSearchShops = (flowerIds: number[], region?: string) => {
-  return useQuery({
-    queryKey: shopKeys.search(flowerIds, region),
-    queryFn: () => shopApi.searchShops(flowerIds, region),
-    enabled: flowerIds.length > 0,
-  });
+  all: ["shops"] as const,
+  search: (flowerIds: number[], region?: string) =>
+    [...shopKeys.all, "search", flowerIds, region] as const,
+  detail: (shopId: number) => [...shopKeys.all, "detail", shopId] as const,
+  myShop: () => [...shopKeys.all, "me"] as const,
 };
 
 // 샵 상세 조회

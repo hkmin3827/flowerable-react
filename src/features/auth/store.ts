@@ -25,6 +25,8 @@ interface AuthState {
     accountStatus: AuthState["accountStatus"];
   }) => void;
 
+  updateUser: (user: Partial<UserInfo>) => void;
+
   clearAuth: () => void;
 }
 
@@ -45,6 +47,10 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: data.refreshToken,
           user: data.user,
         }),
+      updateUser: (user: Partial<UserInfo>) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...user } : null,
+        })),
       updateTokens: ({ accessToken, refreshToken, accountStatus }) =>
         set((state) => ({
           ...state,

@@ -1,4 +1,4 @@
-import { Role, Provider, AccountStatus } from "@/shared/types";
+import { Role, Provider, AccountStatus, ShopStatus } from "@/shared/types";
 
 // API Request Types
 
@@ -22,8 +22,8 @@ export interface ShopSignupRequest {
   telnum: string;
   shopName: string;
   businessNumber: string;
-  region: string;
-  district: string;
+  regionCode: string;
+  districtCode: string;
   address: string;
 }
 
@@ -50,6 +50,7 @@ export interface AuthResponse {
   profileImgUrl: string | null;
   accountStatus: AccountStatus;
   provider: Provider;
+  shopStatus: ShopStatus | null;
 }
 
 // Domain Types (UI에서 사용)
@@ -59,6 +60,7 @@ export interface UserInfo {
   role: Role;
   profileImgUrl: string | null;
   provider: Provider;
+  shopStatus: ShopStatus | null;
 }
 
 export interface OAuthTokenExchangeRequest {

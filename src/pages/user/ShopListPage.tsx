@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { flowerApi } from "@/features/flower/api";
-import { Shop, Region, District } from "@/features/flower/types";
+import { flowerApi } from "@/features/search/api";
+import { Shop, Region, District } from "@/features/search/types";
 
 export const ShopListPage = () => {
   const [searchParams] = useSearchParams();
@@ -36,6 +36,7 @@ export const ShopListPage = () => {
   useEffect(() => {
     if (flowerName) {
       fetchShops();
+      console.log(shops);
     }
   }, [flowerName, selectedRegion, selectedDistrict, currentPage]);
 
@@ -182,11 +183,14 @@ export const ShopListPage = () => {
         <>
           <ShopGrid>
             {shops.map((shop) => (
-              <ShopCard key={shop.id} onClick={() => handleShopClick(shop.id)}>
+              <ShopCard
+                key={shop.shopId}
+                onClick={() => handleShopClick(shop.shopId)}
+              >
                 <ShopHeader>
                   <ShopName>{shop.shopName}</ShopName>
                   <LocationBadge>
-                    {shop.regionDescription} {shop.districtDescription}
+                    {shop.regionDesc} {shop.districtDesc}
                   </LocationBadge>
                 </ShopHeader>
                 <ShopDescription>

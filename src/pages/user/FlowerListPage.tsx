@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { flowerApi } from "@/features/flower/api";
-import { Flower } from "@/features/flower/types";
+import { flowerApi } from "@/features/search/api";
+import { Flower } from "@/features/search/types";
 import { Season } from "@/shared/types";
 
 export const FlowerListPage = () => {
@@ -141,9 +141,8 @@ const getCategoryLabel = (category: Season): string => {
   const labels: Record<Season, string> = {
     SPRING: "봄",
     SUMMER: "여름",
-    FALL: "가을",
+    AUTUMN: "가을",
     WINTER: "겨울",
-    ALL: "사계절",
   };
   return labels[category] || category;
 };

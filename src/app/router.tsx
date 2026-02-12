@@ -11,25 +11,36 @@ import { LoginPage } from "@/pages/auth/LoginPage";
 import { SignupPage } from "@/pages/auth/SignupPage";
 import { OAuthCompleteProfile } from "@/pages/auth/OAuthCompleteProfile";
 
+// common
+import ChatListPage from "@/pages/common/ChatListPage";
+
 // Pages - User
 import { HomePage } from "@/pages/user/HomePage";
 import { FlowerListPage } from "@/pages/user/FlowerListPage";
 import { ShopListPage } from "@/pages/user/ShopListPage";
-import { ShopDetailPage } from "@/pages/user/ShopDetailPage";
+import ShopDetailPage from "@/pages/user/ShopDetailPage";
+import { OrderPage } from "@/pages/user/OrderPage";
 import { CartPage } from "@/pages/user/CartPage";
-import { OrderListPage } from "@/pages/user/OrderListPage";
-import { OrderDetailPage } from "@/pages/user/OrderDetailPage";
+import UserOrderDetailPage from "@/pages/user/UserOrderDetailPage";
+import UserOrderListPage from "@/pages/user/UserOrderListPage";
 import { UserProfilePage } from "@/pages/user/UserProfilePage";
 
 // Pages - Shop
-import { ShopDashboardPage } from "@/pages/shop/ShopDashboardPage";
-import { ShopOrderListPage } from "@/pages/shop/ShopOrderListPage";
+import { ShopManagePage } from "@/pages/shop/ShopManagePage";
+import ShopOrderListPage from "@/pages/shop/ShopOrderListPage";
 import { ShopFlowerManagePage } from "@/pages/shop/ShopFlowerManagePage";
 import { ShopProfilePage } from "@/pages/shop/ShopProfilePage";
+import { ShopFlowersViewPage } from "@/pages/shop/ShopFlowersViewPage";
+import { ShopFlowerAddPage } from "@/pages/shop/ShopFlowerAddPage";
+import { ShopWrappingPage } from "@/pages/shop/ShopWrappingPage";
+import ShopDashboardPage from "@/pages/shop/ShopDashboardPage";
 
 // Pages - Admin
 import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
 import OAuthCallback from "@/pages/auth/OAuthCallback";
+import { ShopManageLayout } from "./layouts/ShopManageLayout";
+import ShopOrderDetailPage from "@/pages/shop/ShopOrderDetailPage";
+import { ShopPendingHome } from "@/pages/shop/ShopPendingHome";
 
 // Protected Route Component
 const ProtectedRoute = ({
@@ -71,7 +82,6 @@ export const router = createBrowserRouter([
     element: <OAuthCompleteProfile />,
   },
 
-  // User routes
   {
     element: <MainLayout />,
     children: [
@@ -92,9 +102,22 @@ export const router = createBrowserRouter([
         element: <ShopDetailPage />,
       },
       {
+        path: "/chats",
+        element: <ChatListPage />,
+      },
+      // User routes
+      {
+        path: "/order/:shopId",
+        element: (
+          <ProtectedRoute allowedRoles={["ROLE_USER"]}>
+            <OrderPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "/cart",
         element: (
-          <ProtectedRoute allowedRoles={["USER"]}>
+          <ProtectedRoute allowedRoles={["ROLE_USER"]}>
             <CartPage />
           </ProtectedRoute>
         ),
@@ -103,22 +126,22 @@ export const router = createBrowserRouter([
         path: "/orders",
         element: (
           <ProtectedRoute allowedRoles={["ROLE_USER"]}>
-            <OrderListPage />
+            <UserOrderListPage />
           </ProtectedRoute>
         ),
       },
       {
         path: "/orders/:orderId",
         element: (
-          <ProtectedRoute allowedRoles={["USER"]}>
-            <OrderDetailPage />
+          <ProtectedRoute allowedRoles={["ROLE_USER"]}>
+            <UserOrderDetailPage />
           </ProtectedRoute>
         ),
       },
       {
         path: "/profile",
         element: (
-          <ProtectedRoute allowedRoles={["USER"]}>
+          <ProtectedRoute allowedRoles={["ROLE_USER"]}>
             <UserProfilePage />
           </ProtectedRoute>
         ),
@@ -130,22 +153,51 @@ export const router = createBrowserRouter([
   {
     path: "/shop",
     element: (
-      <ProtectedRoute allowedRoles={["SHOP"]}>
+      <ProtectedRoute allowedRoles={["ROLE_SHOP"]}>
         <ShopLayout />
       </ProtectedRoute>
     ),
     children: [
       {
+        element: <ShopManageLayout />,
+        children: [
+          {
+            path: "manage",
+            element: <ShopManagePage />,
+          },
+          {
+            path: "wrapping",
+            element: <ShopWrappingPage />,
+          },
+          {
+            path: "flowers/manage",
+            element: <ShopFlowerManagePage />,
+          },
+        ],
+      },
+      {
+        path: "pending-home",
+        element: <ShopPendingHome />,
+      },
+      {
         path: "dashboard",
         element: <ShopDashboardPage />,
+      },
+      {
+        path: "flowers-view",
+        element: <ShopFlowersViewPage />,
       },
       {
         path: "orders",
         element: <ShopOrderListPage />,
       },
       {
-        path: "flowers",
-        element: <ShopFlowerManagePage />,
+        path: "orders/:orderId",
+        element: <ShopOrderDetailPage />,
+      },
+      {
+        path: "flowers/add",
+        element: <ShopFlowerAddPage />,
       },
       {
         path: "profile",
@@ -158,7 +210,7 @@ export const router = createBrowserRouter([
   {
     path: "/admin",
     element: (
-      <ProtectedRoute allowedRoles={["ADMIN"]}>
+      <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
         <AdminLayout />
       </ProtectedRoute>
     ),

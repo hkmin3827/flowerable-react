@@ -1,15 +1,17 @@
-import { NavLink } from 'react-router-dom';
-import styled from 'styled-components';
+import { NavLink } from "react-router-dom";
+import styled from "styled-components";
 
 export const ShopSidebar = () => {
   return (
     <SidebarContainer>
       <Title>샵 관리</Title>
+
       <Nav>
-        <StyledNavLink to="/shop/dashboard">대시보드</StyledNavLink>
-        <StyledNavLink to="/shop/orders">주문 내역</StyledNavLink>
-        <StyledNavLink to="/shop/flowers">보유 꽃 관리</StyledNavLink>
-        <StyledNavLink to="/shop/profile">샵 정보</StyledNavLink>
+        <StyledNavLink to="/shop/manage" end>
+          My 샵
+        </StyledNavLink>
+        <StyledNavLink to="/shop/flowers/manage">보유 꽃 관리</StyledNavLink>
+        <StyledNavLink to="/shop/wrapping">포장지 옵션 관리</StyledNavLink>
       </Nav>
     </SidebarContainer>
   );
@@ -20,6 +22,9 @@ const SidebarContainer = styled.aside`
   background-color: #f9fafb;
   border-right: 1px solid #e5e7eb;
   padding: 2rem 1rem;
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const Title = styled.h2`
