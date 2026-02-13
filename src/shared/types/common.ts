@@ -10,7 +10,7 @@ export type OrderStatus =
   | "COMPLETED"
   | "CANCELED";
 
-export type ShopStatus = "ACTIVE" | "PENDING" | "SUSPENDED";
+export type ShopStatus = "ACTIVE" | "PENDING" | "REJECTED" | "SUSPENDED";
 export type Color =
   | "RED"
   | "PINK"

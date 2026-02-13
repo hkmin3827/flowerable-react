@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { orderApi } from './api';
+import orderApi
 import { OrderCreateRequest, OrderStatusChangeRequest } from './types';
 import { OrderStatus } from '@/shared/types';
 

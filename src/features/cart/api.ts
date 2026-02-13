@@ -32,15 +32,6 @@ export const cartApi = {
     return data;
   },
 
-  // 장바구니 항목 수정
-  updateCartItem: async (
-    cartItemId: number,
-    request: UpdateCartItemRequest,
-  ): Promise<CartInfo> => {
-    const { data } = await axiosInstance.put(`/cart/${cartItemId}`, request);
-    return data;
-  },
-
   // 장바구니 전체 비우기
   clearCart: async (): Promise<void> => {
     await axiosInstance.delete("/cart");

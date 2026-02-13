@@ -1,10 +1,122 @@
 import React, { useState, useEffect } from "react";
+import styled from "styled-components";
 import { chatAPI } from "@/features/chat/api";
 import { ChatRoom } from "@/features/chat/types";
 import ChatRoomModal from "@/features/chat/components/ChatRoomModal";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useAuthStore } from "@/features/auth/store";
+import { colors } from "@/shared/ui/CommonStyles";
+
+const Container = styled.div`
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 24rem;
+  background: ${colors.white};
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
+`;
+
+const Header = styled.div`
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid ${colors.border};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const Title = styled.h2`
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: ${colors.text};
+`;
+
+const ChatList = styled.div`
+  flex: 1;
+  overflow-y: auto;
+`;
+
+const LoadingText = styled.div`
+  padding: 2rem;
+  text-align: center;
+  color: ${colors.textSecondary};
+`;
+
+const EmptyText = styled.div`
+  padding: 2rem;
+  text-align: center;
+  color: ${colors.textSecondary};
+`;
+
+const ChatRoomItem = styled.div`
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid ${colors.border};
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: ${colors.background};
+  }
+`;
+
+const ChatRoomContent = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const ChatRoomMain = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const ChatRoomName = styled.h3`
+  font-weight: 500;
+  color: ${colors.text};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const LastMessage = styled.p`
+  font-size: 0.875rem;
+  color: ${colors.textSecondary};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.25rem;
+`;
+
+const ChatRoomSide = styled.div`
+  margin-left: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+`;
+
+const TimeText = styled.span`
+  font-size: 0.75rem;
+  color: #9ca3af;
+`;
+
+const UnreadBadge = styled.span`
+  background: ${colors.error};
+  color: ${colors.white};
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  min-width: 1.5rem;
+  text-align: center;
+`;
 
 const ChatListPage = () => {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
@@ -35,62 +147,53 @@ const ChatListPage = () => {
 
   return (
     <>
-      {/* 채팅 목록 모달 */}
-      <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl z-50 flex flex-col">
-        {/* 헤더 */}
-        <div className="p-4 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold">채팅</h2>
-        </div>
+      <Container>
+        <Header>
+          <Title>채팅</Title>
+        </Header>
 
-        {/* 채팅방 목록 */}
-        <div className="flex-1 overflow-y-auto">
+        <ChatList>
           {loading ? (
-            <div className="p-8 text-center text-gray-500">로딩 중...</div>
+            <LoadingText>로딩 중...</LoadingText>
           ) : chatRooms.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              채팅방이 없습니다
-            </div>
+            <EmptyText>채팅방이 없습니다</EmptyText>
           ) : (
             chatRooms.map((room) => (
-              <div
+              <ChatRoomItem
                 key={room.id}
                 onClick={() => handleChatRoomClick(room)}
-                className="p-4 border-b hover:bg-gray-50 cursor-pointer"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 truncate">
+                <ChatRoomContent>
+                  <ChatRoomMain>
+                    <ChatRoomName>
                       {user?.role === "ROLE_USER"
                         ? room.shopName
                         : room.userName}
-                    </h3>
-                    <p className="text-sm text-gray-600 truncate mt-1">
+                    </ChatRoomName>
+                    <LastMessage>
                       {room.lastMessage || "메시지가 없습니다"}
-                    </p>
-                  </div>
-                  <div className="ml-3 flex flex-col items-end gap-1">
+                    </LastMessage>
+                  </ChatRoomMain>
+                  <ChatRoomSide>
                     {room.lastMessageAt && (
-                      <span className="text-xs text-gray-400">
+                      <TimeText>
                         {formatDistanceToNow(new Date(room.lastMessageAt), {
                           addSuffix: true,
                           locale: ko,
                         })}
-                      </span>
+                      </TimeText>
                     )}
                     {room.unreadCount > 0 && (
-                      <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1">
-                        {room.unreadCount}
-                      </span>
+                      <UnreadBadge>{room.unreadCount}</UnreadBadge>
                     )}
-                  </div>
-                </div>
-              </div>
+                  </ChatRoomSide>
+                </ChatRoomContent>
+              </ChatRoomItem>
             ))
           )}
-        </div>
-      </div>
+        </ChatList>
+      </Container>
 
-      {/* 채팅방 모달 */}
       {selectedChatRoom && (
         <ChatRoomModal
           chatRoom={selectedChatRoom}

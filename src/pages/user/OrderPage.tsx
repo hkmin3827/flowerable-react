@@ -3,16 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { axiosInstance } from "@/shared/api/axios";
 import { useAddToCart } from "@/features/cart/hooks";
+import { Color, ShopStatus } from "@/shared/types";
 
 interface ShopFlower {
   id: number;
-  flower: {
-    id: number;
-    name: string;
-    imageUrl: string;
-  };
+  flowerId: number;
+  flowerName: string;
   price: number;
-  colors: string[];
+  colors: Color[];
   onSale: boolean;
 }
 
@@ -23,15 +21,19 @@ interface WrappingOption {
 
 interface Shop {
   id: number;
-  name: string;
+  shopName: string;
   address: string;
-  phoneNumber: string;
+  regionDesc: string;
+  districtDesc: string;
+  telnum: string;
+  status: ShopStatus;
+  registerAt: number;
+  shopFlowers: ShopFlower[];
 }
 
 interface FlowerSelection {
   shopFlowerId: number;
   flowerName: string;
-  imageUrl: string;
   color: string;
   quantity: number;
   basePrice: number;
@@ -59,14 +61,19 @@ export const OrderPage = () => {
 
   const fetchShopData = async () => {
     try {
-      const [shopRes, flowersRes, wrappingRes] = await Promise.all([
+      const [shopRes, wrappingRes] = await Promise.all([
         axiosInstance.get(`/shops/${shopId}`),
-        axiosInstance.get(`/shops/${shopId}/flowers`),
-        axiosInstance.get(`/shops/${shopId}/wrapping-options`),
+        axiosInstance.get(`/orders/users/${shopId}/wrapping-options`),
       ]);
 
-      setShop(shopRes.data.data);
-      setFlowers(flowersRes.data.data.filter((f: ShopFlower) => f.onSale));
+      const shopData: Shop = shopRes.data;
+
+      setShop(shopData);
+
+      const onSaleFlowers = shopData.shopFlowers.filter((f) => f.onSale);
+
+      setFlowers(onSaleFlowers);
+
       setWrappingOptions(wrappingRes.data.data || []);
     } catch (error) {
       console.error("Failed to fetch shop data:", error);
@@ -95,8 +102,7 @@ export const OrderPage = () => {
         ...prev,
         {
           shopFlowerId: flower.id,
-          flowerName: flower.flower.name,
-          imageUrl: flower.flower.imageUrl,
+          flowerName: flower.flowerName,
           color,
           quantity,
           basePrice: flower.price,
@@ -166,8 +172,24 @@ export const OrderPage = () => {
     }
   };
 
-  const handleDirectOrder = () => {
-    alert("직접 결제 기능은 준비 중입니다. 장바구니를 이용해주세요.");
+  const handleDirectOrder = async () => {
+    try {
+      await axiosInstance.post(
+        `/orders/users/${shopId}`,
+        {
+          orderItems: [{ shopFlowerId: 4, quantity: 2, flowerColor: "WHITE" }],
+          wrappingColorName: "WHITE",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      return;
+    } catch (err) {
+      alert("직접 결제 기능은 준비 중입니다. 장바구니를 이용해주세요.");
+    }
   };
 
   if (loading) {
@@ -190,9 +212,11 @@ export const OrderPage = () => {
     <Container>
       <OrderCard>
         <ShopInfo>
-          <ShopName>{shop.name}</ShopName>
-          <ShopDetail>{shop.address}</ShopDetail>
-          <ShopDetail>{shop.phoneNumber}</ShopDetail>
+          <ShopName>{shop.shopName}</ShopName>
+          <ShopDetail>
+            {shop.regionDesc} {shop.districtDesc} {shop.address}
+          </ShopDetail>
+          <ShopDetail>{shop.telnum}</ShopDetail>
         </ShopInfo>
 
         <Section>
@@ -200,12 +224,8 @@ export const OrderPage = () => {
           <FlowerGrid>
             {flowers.map((flower) => (
               <FlowerCard key={flower.id}>
-                <FlowerImage
-                  src={flower.flower.imageUrl}
-                  alt={flower.flower.name}
-                />
                 <FlowerInfo>
-                  <FlowerName>{flower.flower.name}</FlowerName>
+                  <FlowerName>{flower.flowerName}</FlowerName>
                   <FlowerPrice>{flower.price.toLocaleString()}원</FlowerPrice>
                   <ColorSelect>
                     {flower.colors.map((color) => (

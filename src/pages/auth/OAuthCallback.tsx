@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/store";
 import { authApi } from "@/features/auth/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { cartApi } from "@/features/cart/api";
 
 const OAuthCallback = () => {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { setAuth, clearAuth } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +81,10 @@ const OAuthCallback = () => {
 
         setAuth(authData);
 
+        await queryClient.prefetchQuery({
+          queryKey: ["cart", "count", authData.user.id],
+          queryFn: cartApi.getCartCount,
+        });
         navigate("/", { replace: true });
       } catch (err: any) {
         console.error("❌ OAuth 콜백 처리 실패:", err);

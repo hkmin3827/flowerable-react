@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { authApi } from "./api";
 import { useAuthStore } from "./store";
 import { LoginRequest, UserSignupRequest, ShopSignupRequest } from "./types";
+import { useQueryClient } from "@tanstack/react-query";
 
-// 로그인 mutation
 export const useLogin = () => {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
 
@@ -46,6 +47,7 @@ export const useLogin = () => {
           shopStatus,
         },
       });
+      queryClient.invalidateQueries({ queryKey: ["cart", "count"] });
       if (role === "ROLE_SHOP" && shopStatus != "PENDING") {
         navigate("/shop/dashboard");
       } else if (role === "ROLE_SHOP" && shopStatus == "PENDING") {

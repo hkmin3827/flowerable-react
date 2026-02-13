@@ -14,6 +14,7 @@ export interface OrderItem {
   itemTotalPrice: number;
   shopFlowerId: number;
   quantity: number;
+  flowerBasePrice: number;
 }
 
 export interface OrderList {
@@ -30,11 +31,9 @@ export interface OrderDetail {
   status: OrderStatus;
   userId: number;
   userName: string;
-  userPhoneNumber: string;
   shopId: number;
   shopName: string;
   shopAddress: string;
-  shopPhoneNumber: string;
   totalFlowerPrice: number;
   totalPrice: number;
   wrappingColorName: string | null;

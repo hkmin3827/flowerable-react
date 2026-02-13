@@ -1,10 +1,374 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import styled from "styled-components";
 import { shopOrderAPI } from "@/features/order/api";
 import { OrderDetail } from "@/features/order/types";
 import { format } from "date-fns";
-import { ArrowLeft, User, Phone } from "lucide-react";
+import { ArrowLeft, User, Phone, X } from "lucide-react";
 import { OrderStatus } from "@/shared/types";
+import {
+  colors,
+  LoadingContainer,
+  ModalOverlay,
+  ModalContent,
+} from "@/shared/ui/CommonStyles";
+
+const Container = styled.div`
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+`;
+
+const BackButton = styled.button`
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: ${colors.background};
+  }
+`;
+
+const PageTitle = styled.h1`
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: ${colors.text};
+`;
+
+const Card = styled.div`
+  background: ${colors.white};
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+`;
+
+const OrderInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const OrderNumber = styled.p`
+  font-size: 0.875rem;
+  color: ${colors.textSecondary};
+`;
+
+const OrderDate = styled.p`
+  font-size: 0.875rem;
+  color: ${colors.textSecondary};
+`;
+
+const StatusBadge = styled.span<{ status: OrderStatus }>`
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  ${({ status }) => {
+    switch (status) {
+      case "REQUESTED":
+        return `background: ${colors.errorLight}; color: ${colors.error};`;
+      case "ACCEPTED":
+        return `background: ${colors.infoLight}; color: ${colors.info};`;
+      case "READY":
+        return `background: ${colors.successLight}; color: ${colors.success};`;
+      case "COMPLETED":
+        return `background: #F3F4F6; color: #6B7280;`;
+      case "CANCELED":
+        return `background: #F3F4F6; color: #9CA3AF;`;
+      default:
+        return `background: #F3F4F6; color: #6B7280;`;
+    }
+  }}
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: ${colors.text};
+  margin-bottom: 1rem;
+`;
+
+const InfoGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const InfoItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${colors.textSecondary};
+`;
+
+const InfoLabel = styled.span`
+  font-weight: 500;
+  color: ${colors.text};
+`;
+
+const ItemList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const OrderItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid ${colors.border};
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+`;
+
+const ItemInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const ItemName = styled.p`
+  font-weight: 500;
+  color: ${colors.text};
+`;
+
+const ItemQuantity = styled.p`
+  font-size: 0.875rem;
+  color: ${colors.textSecondary};
+`;
+
+const ItemPrice = styled.p`
+  font-weight: bold;
+  color: ${colors.text};
+`;
+
+const PriceGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const PriceRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const PriceLabel = styled.span`
+  color: ${colors.textSecondary};
+`;
+
+const TotalRow = styled(PriceRow)`
+  border-top: 1px solid ${colors.border};
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+`;
+
+const TotalLabel = styled.span`
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: ${colors.text};
+`;
+
+const TotalPrice = styled.span`
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: ${colors.primary};
+`;
+
+const Message = styled.p`
+  color: ${colors.textSecondary};
+  line-height: 1.6;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const Button = styled.button<{
+  variant?: "primary" | "success" | "error" | "disabled";
+}>`
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  ${({ variant = "primary" }) => {
+    switch (variant) {
+      case "success":
+        return `
+          background: ${colors.info};
+          color: ${colors.white};
+          &:hover:not(:disabled) {
+            background: #2563EB;
+          }
+        `;
+      case "error":
+        return `
+          background: ${colors.error};
+          color: ${colors.white};
+          &:hover:not(:disabled) {
+            background: #DC2626;
+          }
+        `;
+      case "disabled":
+        return `
+          background: #D1D5DB;
+          color: #6B7280;
+          cursor: not-allowed;
+        `;
+      default:
+        return `
+          background: ${colors.primary};
+          color: ${colors.white};
+          &:hover:not(:disabled) {
+            background: ${colors.primaryHover};
+          }
+        `;
+    }
+  }}
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+`;
+
+const ModalTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: ${colors.text};
+`;
+
+const CloseButton = styled.button`
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: ${colors.textSecondary};
+  transition: color 0.2s;
+
+  &:hover {
+    color: ${colors.text};
+  }
+`;
+
+const ReasonGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ReasonButton = styled.button<{ selected?: boolean }>`
+  padding: 1rem;
+  border: 2px solid
+    ${({ selected }) => (selected ? colors.primary : colors.border)};
+  background: ${({ selected }) =>
+    selected ? colors.primaryLight : colors.white};
+  color: ${colors.text};
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+
+  &:hover {
+    border-color: ${colors.primary};
+    background: ${colors.primaryLight};
+  }
+`;
+
+const ModalFooter = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+`;
+
+const ModalButton = styled.button<{ variant?: "primary" | "secondary" }>`
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  ${({ variant = "primary" }) =>
+    variant === "primary"
+      ? `
+    background: ${colors.error};
+    color: ${colors.white};
+    &:hover:not(:disabled) {
+      background: #DC2626;
+    }
+  `
+      : `
+    background: ${colors.background};
+    color: ${colors.text};
+    &:hover:not(:disabled) {
+      background: #E5E7EB;
+    }
+  `}
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const CANCEL_REASONS = [
+  { value: "OUT_OF_STOCK", label: "재고 부족" },
+  { value: "CUSTOMER_REQUEST", label: "주문자 요청" },
+  { value: "CANNOT_FULFILL_REQUEST", label: "요청 사항 어려움" },
+  { value: "SHOP_CLOSED", label: "영업 종료 / 임시 휴무" },
+  { value: "PRICE_ERROR", label: "가격 오류" },
+  { value: "OTHER", label: "가게 사정" },
+];
 
 const ShopOrderDetailPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -12,6 +376,8 @@ const ShopOrderDetailPage: React.FC = () => {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
 
   useEffect(() => {
     if (orderId) {
@@ -46,13 +412,31 @@ const ShopOrderDetailPage: React.FC = () => {
     }
   };
 
-  const handleCancelOrder = async () => {
-    if (!order || !window.confirm("주문을 취소하시겠습니까?")) return;
+  const handleOpenCancelModal = () => {
+    setShowCancelModal(true);
+    setSelectedReason("");
+  };
+
+  const handleCloseCancelModal = () => {
+    setShowCancelModal(false);
+    setSelectedReason("");
+  };
+
+  const handleSubmitCancel = async () => {
+    if (!order || !selectedReason) {
+      alert("취소 사유를 선택해주세요.");
+      return;
+    }
 
     setProcessing(true);
     try {
-      await shopOrderAPI.changeStatus(order.orderId, "CANCELED");
+      await shopOrderAPI.changeStatus(
+        order.orderId,
+        "CANCELED",
+        selectedReason,
+      );
       alert("주문이 취소되었습니다.");
+      setShowCancelModal(false);
       fetchOrderDetail();
     } catch (error) {
       console.error("Failed to cancel order:", error);
@@ -73,174 +457,176 @@ const ShopOrderDetailPage: React.FC = () => {
     return statusMap[status];
   };
 
-  const getStatusColor = (status: OrderStatus) => {
-    const colorMap = {
-      REQUESTED: "bg-red-100 text-red-800",
-      ACCEPTED: "bg-blue-100 text-blue-800",
-      READY: "bg-green-100 text-green-800",
-      COMPLETED: "bg-gray-100 text-gray-800",
-      CANCELED: "bg-gray-100 text-gray-600",
-    };
-    return colorMap[status];
-  };
-
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center text-gray-500">로딩 중...</div>
-      </div>
+      <Container>
+        <LoadingContainer>로딩 중...</LoadingContainer>
+      </Container>
     );
   }
 
   if (!order) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center text-gray-500">주문을 찾을 수 없습니다</div>
-      </div>
+      <Container>
+        <LoadingContainer>주문을 찾을 수 없습니다</LoadingContainer>
+      </Container>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* 헤더 */}
-      <div className="flex items-center gap-4 mb-8">
-        <button
-          onClick={() => navigate("/shop/orders")}
-          className="p-2 hover:bg-gray-100 rounded-full"
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <h1 className="text-3xl font-bold">주문 상세</h1>
-      </div>
+    <>
+      <Container>
+        <Header>
+          <BackButton onClick={() => navigate("/shop/orders")}>
+            <ArrowLeft size={24} />
+          </BackButton>
+          <PageTitle>주문 상세</PageTitle>
+        </Header>
 
-      {/* 주문 정보 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <p className="text-sm text-gray-500 mb-1">
-              주문번호: {order.orderNumber}
-            </p>
-            <p className="text-sm text-gray-500">
-              {format(new Date(order.createdAt), "yyyy년 MM월 dd일 HH:mm")}
-            </p>
-          </div>
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}
-          >
-            {getStatusText(order.status)}
-          </span>
-        </div>
-      </div>
+        <Card>
+          <CardHeader>
+            <OrderInfo>
+              <OrderNumber>주문번호: {order.orderNumber}</OrderNumber>
+              <OrderDate>
+                {format(new Date(order.createdAt), "yyyy년 MM월 dd일 HH:mm")}
+              </OrderDate>
+            </OrderInfo>
+            <StatusBadge status={order.status}>
+              {getStatusText(order.status)}
+            </StatusBadge>
+          </CardHeader>
+        </Card>
 
-      {/* 고객 정보 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4">고객 정보</h2>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-gray-700">
-            <User size={20} />
-            <span className="font-medium">{order.userName}</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-600">
-            <Phone size={20} />
-            <span>{order.userPhoneNumber}</span>
-          </div>
-        </div>
-      </div>
+        <Card>
+          <SectionTitle>고객 정보</SectionTitle>
+          <InfoGroup>
+            <InfoItem>
+              <User size={20} />
+              <InfoLabel>{order.userName}</InfoLabel>
+            </InfoItem>
+          </InfoGroup>
+        </Card>
 
-      {/* 주문 상품 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4">주문 상품</h2>
-        <div className="space-y-4">
-          {(order.items ?? []).map((item, index) => (
-            <div key={index} className="flex gap-4 pb-4 border-b last:border-0">
-              <div className="flex-1">
-                <p className="font-medium">{item.flowerName}</p>
-                <p className="text-sm text-gray-600">{item.quantity}개</p>
-              </div>
-              <p className="font-bold">
-                {item.itemTotalPrice.toLocaleString()}원
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
+        <Card>
+          <SectionTitle>주문 상품</SectionTitle>
+          <ItemList>
+            {(order.items ?? []).map((item, index) => (
+              <OrderItem key={index}>
+                <ItemInfo>
+                  <ItemName>{item.flowerName}</ItemName>
+                  <ItemQuantity>
+                    {item.flowerBasePrice} * {item.quantity}개
+                  </ItemQuantity>
+                </ItemInfo>
+                <ItemPrice>{item.itemTotalPrice}원</ItemPrice>
+              </OrderItem>
+            ))}
+          </ItemList>
+        </Card>
 
-      {/* 결제 정보 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4">결제 정보</h2>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span className="text-gray-600">상품 금액</span>
-            <span>{order.totalFlowerPrice.toLocaleString()}원</span>
-          </div>
-          {order.wrappingColorName && (
-            <div className="flex justify-between">
-              <span className="text-gray-600">
-                포장 ({order.wrappingColorName})
-              </span>
-              <span>{order.wrappingExtraPrice.toLocaleString()}원</span>
-            </div>
+        <Card>
+          <SectionTitle>결제 정보</SectionTitle>
+          <PriceGroup>
+            <PriceRow>
+              <PriceLabel>상품 금액</PriceLabel>
+              <span>{order.totalFlowerPrice}원</span>
+            </PriceRow>
+            {order.wrappingColorName && (
+              <PriceRow>
+                <PriceLabel>포장 ({order.wrappingColorName})</PriceLabel>
+                <span>{order.wrappingExtraPrice}원</span>
+              </PriceRow>
+            )}
+            <TotalRow>
+              <TotalLabel>총 금액</TotalLabel>
+              <TotalPrice>{order.totalPrice}원</TotalPrice>
+            </TotalRow>
+          </PriceGroup>
+        </Card>
+
+        {order.message && (
+          <Card>
+            <SectionTitle>요청사항</SectionTitle>
+            <Message>{order.message}</Message>
+          </Card>
+        )}
+
+        <ButtonGroup>
+          {order.status === "REQUESTED" && (
+            <>
+              <Button
+                variant="success"
+                onClick={handleAcceptOrder}
+                disabled={processing}
+              >
+                {processing ? "처리 중..." : "주문 접수"}
+              </Button>
+              <Button
+                variant="error"
+                onClick={handleOpenCancelModal}
+                disabled={processing}
+              >
+                주문 취소
+              </Button>
+            </>
           )}
-          <div className="border-t pt-2 mt-2">
-            <div className="flex justify-between text-lg font-bold">
-              <span>총 금액</span>
-              <span className="text-pink-600">
-                {order.totalPrice.toLocaleString()}원
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* 요청사항 */}
-      {order.message && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">요청사항</h2>
-          <p className="text-gray-700">{order.message}</p>
-        </div>
+          {(order.status === "READY" || order.status === "ACCEPTED") && (
+            <Button
+              variant="error"
+              onClick={handleOpenCancelModal}
+              disabled={processing}
+            >
+              {processing ? "처리 중..." : "주문 취소"}
+            </Button>
+          )}
+
+          {(order.status === "COMPLETED" || order.status === "CANCELED") && (
+            <Button variant="disabled" disabled>
+              처리 완료
+            </Button>
+          )}
+        </ButtonGroup>
+      </Container>
+
+      {showCancelModal && (
+        <ModalOverlay onClick={handleCloseCancelModal}>
+          <ModalContent width="36rem" onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>주문 취소 사유 선택</ModalTitle>
+              <CloseButton onClick={handleCloseCancelModal}>
+                <X size={24} />
+              </CloseButton>
+            </ModalHeader>
+
+            <ReasonGrid>
+              {CANCEL_REASONS.map((reason) => (
+                <ReasonButton
+                  key={reason.value}
+                  selected={selectedReason === reason.value}
+                  onClick={() => setSelectedReason(reason.value)}
+                >
+                  {reason.label}
+                </ReasonButton>
+              ))}
+            </ReasonGrid>
+
+            <ModalFooter>
+              <ModalButton variant="secondary" onClick={handleCloseCancelModal}>
+                닫기
+              </ModalButton>
+              <ModalButton
+                variant="primary"
+                onClick={handleSubmitCancel}
+                disabled={!selectedReason || processing}
+              >
+                {processing ? "처리 중..." : "취소하기"}
+              </ModalButton>
+            </ModalFooter>
+          </ModalContent>
+        </ModalOverlay>
       )}
-
-      {/* 주문 처리 버튼 */}
-      <div className="space-y-3">
-        {order.status === "REQUESTED" && (
-          <>
-            <button
-              onClick={handleAcceptOrder}
-              disabled={processing}
-              className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
-            >
-              {processing ? "처리 중..." : "주문 접수"}
-            </button>
-            <button
-              onClick={handleCancelOrder}
-              disabled={processing}
-              className="w-full py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50"
-            >
-              주문 취소
-            </button>
-          </>
-        )}
-
-        {(order.status === "READY" || order.status === "ACCEPTED") && (
-          <button
-            onClick={handleCancelOrder}
-            disabled={processing}
-            className="w-full py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50"
-          >
-            {processing ? "처리 중..." : "주문 취소"}
-          </button>
-        )}
-
-        {(order.status === "COMPLETED" || order.status === "CANCELED") && (
-          <button
-            disabled
-            className="w-full py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed"
-          >
-            처리 완료
-          </button>
-        )}
-      </div>
-    </div>
+    </>
   );
 };
 

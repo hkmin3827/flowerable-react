@@ -1,10 +1,169 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
 import { userOrderAPI } from "@/features/order/api";
 import { OrderList } from "@/features/order/types";
 import { format } from "date-fns";
 import { Package, ChevronRight } from "lucide-react";
 import { OrderStatus } from "@/shared/types";
+import { colors, LoadingContainer } from "@/shared/ui/CommonStyles";
+
+const Container = styled.div`
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+`;
+
+const PageTitle = styled.h1`
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: ${colors.text};
+  margin-bottom: 2rem;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 4rem 1rem;
+`;
+
+const EmptyIcon = styled(Package)`
+  margin: 0 auto 1rem;
+  color: #d1d5db;
+`;
+
+const EmptyText = styled.p`
+  color: ${colors.textSecondary};
+  font-size: 1rem;
+`;
+
+const OrdersList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const OrderCard = styled.div`
+  background: ${colors.white};
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+`;
+
+const OrderHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+`;
+
+const OrderInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const OrderNumber = styled.p`
+  font-size: 0.875rem;
+  color: ${colors.textSecondary};
+`;
+
+const StatusBadge = styled.span<{ status: OrderStatus }>`
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  ${({ status }) => {
+    switch (status) {
+      case "REQUESTED":
+        return `background: #FEF3C7; color: #D97706;`;
+      case "ACCEPTED":
+        return `background: ${colors.infoLight}; color: ${colors.info};`;
+      case "READY":
+        return `background: ${colors.successLight}; color: ${colors.success};`;
+      case "COMPLETED":
+        return `background: #F3F4F6; color: #6B7280;`;
+      case "CANCELED":
+        return `background: ${colors.errorLight}; color: ${colors.error};`;
+      default:
+        return `background: #F3F4F6; color: #6B7280;`;
+    }
+  }}
+`;
+
+const OrderFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const PriceInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const TotalPrice = styled.p`
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: ${colors.primary};
+`;
+
+const OrderDate = styled.p`
+  font-size: 0.875rem;
+  color: ${colors.textSecondary};
+`;
+
+const ArrowIcon = styled(ChevronRight)`
+  color: #9ca3af;
+  flex-shrink: 0;
+`;
+
+const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+`;
+
+const PageButton = styled.button`
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: ${colors.background};
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: ${colors.border};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const PageInfo = styled.span`
+  padding: 0.5rem 1rem;
+  color: ${colors.text};
+  font-weight: 500;
+`;
 
 const UserOrderListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -41,97 +200,75 @@ const UserOrderListPage: React.FC = () => {
     return statusMap[status];
   };
 
-  const getStatusColor = (status: OrderStatus) => {
-    const colorMap = {
-      REQUESTED: "bg-yellow-100 text-yellow-800",
-      ACCEPTED: "bg-blue-100 text-blue-800",
-      READY: "bg-green-100 text-green-800",
-      COMPLETED: "bg-gray-100 text-gray-800",
-      CANCELED: "bg-red-100 text-red-800",
-    };
-    return colorMap[status];
-  };
-
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="text-center text-gray-500">로딩 중...</div>
-      </div>
+      <Container>
+        <LoadingContainer>로딩 중...</LoadingContainer>
+      </Container>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">주문 내역</h1>
+    <Container>
+      <PageTitle>주문 내역</PageTitle>
 
       {orders.length === 0 ? (
-        <div className="text-center py-16">
-          <Package size={64} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">주문 내역이 없습니다</p>
-        </div>
+        <EmptyState>
+          <EmptyIcon size={64} />
+          <EmptyText>주문 내역이 없습니다</EmptyText>
+        </EmptyState>
       ) : (
-        <div className="space-y-4">
+        <OrdersList>
           {orders.map((order) => (
-            <div
+            <OrderCard
               key={order.orderId}
               onClick={() => navigate(`/orders/${order.orderId}`)}
-              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
             >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">
-                    주문번호: {order.orderNumber}
-                  </p>
-                  {/* <h3 className="text-lg font-bold">{order.shopName}</h3> */}
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}
-                >
+              <OrderHeader>
+                <OrderInfo>
+                  <OrderNumber>주문번호: {order.orderNumber}</OrderNumber>
+                </OrderInfo>
+                <StatusBadge status={order.status}>
                   {getStatusText(order.status)}
-                </span>
-              </div>
+                </StatusBadge>
+              </OrderHeader>
 
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-2xl font-bold text-pink-600">
-                    {order.totalPrice.toLocaleString()}원
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
+              <OrderFooter>
+                <PriceInfo>
+                  <TotalPrice>{order.totalPrice.toLocaleString()}원</TotalPrice>
+                  <OrderDate>
                     {format(new Date(order.createdAt), "yyyy.MM.dd HH:mm")}
-                  </p>
-                </div>
-                <ChevronRight size={24} className="text-gray-400" />
-              </div>
-            </div>
+                  </OrderDate>
+                </PriceInfo>
+                <ArrowIcon size={24} />
+              </OrderFooter>
+            </OrderCard>
           ))}
-        </div>
+        </OrdersList>
       )}
 
-      {/* 페이지네이션 */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-8">
-          <button
+        <Pagination>
+          <PageButton
             onClick={() => setPage((prev) => Math.max(0, prev - 1))}
             disabled={page === 0}
-            className="px-4 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
           >
             이전
-          </button>
-          <span className="px-4 py-2">
+          </PageButton>
+          <PageInfo>
             {page + 1} / {totalPages}
-          </span>
-          <button
+          </PageInfo>
+          <PageButton
             onClick={() =>
               setPage((prev) => Math.min(totalPages - 1, prev + 1))
             }
             disabled={page === totalPages - 1}
-            className="px-4 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
           >
             다음
-          </button>
-        </div>
+          </PageButton>
+        </Pagination>
       )}
-    </div>
+    </Container>
   );
 };
 

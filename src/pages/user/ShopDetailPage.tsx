@@ -1,10 +1,165 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import styled from "styled-components";
 import { shopApi } from "@/features/shop/api";
 import { MapPin, Phone, MessageCircle, ShoppingCart } from "lucide-react";
 import { ShopDetailResponse } from "@/features/shop/types";
 import { chatAPI } from "@/features/chat/api";
 import { useAuthStore } from "@/features/auth/store";
+import { colors, LoadingContainer } from "@/shared/ui/CommonStyles";
+
+const Container = styled.div`
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+`;
+
+const ShopCard = styled.div`
+  background: ${colors.white};
+  border-radius: 0.75rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 2rem;
+  margin-bottom: 2rem;
+`;
+
+const ShopName = styled.h1`
+  font-size: 2rem;
+  font-weight: bold;
+  color: ${colors.text};
+  margin-bottom: 1rem;
+`;
+
+const Description = styled.p`
+  color: ${colors.textSecondary};
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+`;
+
+const InfoGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+`;
+
+const InfoItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: ${colors.textSecondary};
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 1rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
+`;
+
+const ActionButton = styled.button<{ variant?: "primary" | "secondary" }>`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  ${({ variant = "primary" }) =>
+    variant === "primary"
+      ? `
+    background: ${colors.primary};
+    color: ${colors.white};
+    
+    &:hover {
+      background: ${colors.primaryHover};
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.3);
+    }
+  `
+      : `
+    background: ${colors.secondary};
+    color: ${colors.white};
+    
+    &:hover {
+      background: ${colors.secondaryHover};
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(75, 85, 99, 0.3);
+    }
+  `}
+`;
+
+const FlowersSection = styled.div`
+  background: ${colors.white};
+  border-radius: 0.75rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 2rem;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: ${colors.text};
+  margin-bottom: 1.5rem;
+`;
+
+const FlowerGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FlowerCard = styled.div`
+  border: 1px solid ${colors.border};
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: ${colors.primary};
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+`;
+
+const FlowerName = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: ${colors.text};
+  margin-bottom: 0.75rem;
+`;
+
+const FlowerPrice = styled.p`
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: ${colors.primary};
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem 1rem;
+  color: ${colors.textSecondary};
+`;
 
 const ShopDetailPage: React.FC = () => {
   const { shopId } = useParams<{ shopId: string }>();
@@ -55,7 +210,6 @@ const ShopDetailPage: React.FC = () => {
     }
 
     try {
-      // 채팅방 생성 또는 가져오기
       const response = await chatAPI.getOrCreateChatRoom(Number(shopId));
       const chatRoomId = response.data;
       navigate("/chats");
@@ -67,91 +221,68 @@ const ShopDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="text-center text-gray-500">로딩 중...</div>
-      </div>
+      <Container>
+        <LoadingContainer>로딩 중...</LoadingContainer>
+      </Container>
     );
   }
 
   if (!shop) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="text-center text-gray-500">가게를 찾을 수 없습니다</div>
-      </div>
+      <Container>
+        <EmptyState>가게를 찾을 수 없습니다</EmptyState>
+      </Container>
     );
   }
 
+  const onSaleFlowers = shop.shopFlowers.filter((flower) => flower.onSale);
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* 가게 이미지 */}
-      {/* {shop.image.length > 0 && (
-        <div className="mb-8">
-          <img
-            src={shop.imageUrls[0]}
-            alt={shop.name}
-            className="w-full h-96 object-cover rounded-lg"
-          />
-        </div>
-      )} */}
+    <Container>
+      <ShopCard>
+        <ShopName>{shop.shopName}</ShopName>
 
-      {/* 가게 정보 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h1 className="text-3xl font-bold mb-4">{shop.shopName}</h1>
+        {shop.description && <Description>{shop.description}</Description>}
 
-        {shop.description && (
-          <p className="text-gray-700 mb-4">{shop.description}</p>
-        )}
-
-        <div className="space-y-3">
-          <div className="flex items-start gap-2 text-gray-600">
-            <MapPin size={20} className="flex-shrink-0 mt-1" />
+        <InfoGroup>
+          <InfoItem>
+            <MapPin size={20} />
             <span>{shop.address}</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-600">
+          </InfoItem>
+          <InfoItem>
             <Phone size={20} />
             <span>{shop.telnum}</span>
-          </div>
-        </div>
+          </InfoItem>
+        </InfoGroup>
 
-        {/* 주문/문의 버튼 */}
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={handleOrder}
-            className="flex-1 py-3 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 flex items-center justify-center gap-2"
-          >
+        <ButtonGroup>
+          <ActionButton variant="primary" onClick={handleOrder}>
             <ShoppingCart size={20} />
             주문하기
-          </button>
-          <button
-            onClick={handleInquiry}
-            className="flex-1 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 flex items-center justify-center gap-2"
-          >
+          </ActionButton>
+          <ActionButton variant="secondary" onClick={handleInquiry}>
             <MessageCircle size={20} />
             문의하기
-          </button>
-        </div>
-      </div>
+          </ActionButton>
+        </ButtonGroup>
+      </ShopCard>
 
-      {/* 판매 중인 꽃 */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold mb-6">판매 중인 꽃</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {shop.shopFlowers
-            .filter((flower) => flower.onSale)
-            .map((flower) => (
-              <div
-                key={flower.id}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-              >
-                <h3 className="font-bold text-lg mb-2">{flower.flowerName}</h3>
-                <p className="text-pink-600 font-bold text-xl mb-2">
-                  {flower.price.toLocaleString()}원
-                </p>
-              </div>
+      <FlowersSection>
+        <SectionTitle>판매 중인 꽃</SectionTitle>
+        {onSaleFlowers.length > 0 ? (
+          <FlowerGrid>
+            {onSaleFlowers.map((flower) => (
+              <FlowerCard key={flower.id}>
+                <FlowerName>{flower.flowerName}</FlowerName>
+                <FlowerPrice>{flower.price.toLocaleString()}원</FlowerPrice>
+              </FlowerCard>
             ))}
-        </div>
-      </div>
-    </div>
+          </FlowerGrid>
+        ) : (
+          <EmptyState>판매 중인 꽃이 없습니다</EmptyState>
+        )}
+      </FlowersSection>
+    </Container>
   );
 };
 
