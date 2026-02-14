@@ -81,7 +81,9 @@ const AdminShopManagePage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    undefined,
+  );
   const [selectedShopDetail, setSelectedShopDetail] =
     useState<ShopDetail | null>(null);
 
@@ -92,8 +94,11 @@ const AdminShopManagePage: React.FC = () => {
   const fetchShops = async () => {
     setLoading(true);
     try {
+      const shopStatus = statusFilter === "ALL" ? undefined : statusFilter;
+
       const response = await adminShopAPI.getShops(
-        statusFilter || undefined,
+        shopStatus,
+        undefined,
         page,
         20,
       );
@@ -163,9 +168,8 @@ const AdminShopManagePage: React.FC = () => {
         alert("샵을 활성화했습니다.");
       }
       fetchShops();
-    } catch (error) {
-      console.error("Failed to toggle shop status:", error);
-      alert("상태 변경에 실패했습니다.");
+    } catch (error: any) {
+      alert(error.response?.data?.message || "상태 변경에 실패했습니다.");
     }
   };
 
@@ -201,7 +205,7 @@ const AdminShopManagePage: React.FC = () => {
         <Select
           value={statusFilter}
           onChange={(e) => {
-            setStatusFilter(e.target.value);
+            setStatusFilter(e.target.value || undefined);
             setPage(0);
           }}
         >
@@ -254,12 +258,12 @@ const AdminShopManagePage: React.FC = () => {
                     style={{ cursor: "pointer" }}
                   >
                     <TableCell>{shop.shopName}</TableCell>
-                    <TableCell>{shop.email}</TableCell>
+                    <TableCell>{shop.accountEmail}</TableCell>
                     <TableCell>{shop.address}</TableCell>
-                    <TableCell>{shop.telnum}</TableCell>
+                    <TableCell>{shop.accountTelnum}</TableCell>
                     <TableCell>{getStatusBadge(shop.status)}</TableCell>
                     <TableCell>
-                      {new Date(shop.createdAt).toLocaleDateString()}
+                      {new Date(shop.registerAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <ActionButtons onClick={(e) => e.stopPropagation()}>
@@ -367,7 +371,7 @@ const AdminShopManagePage: React.FC = () => {
               <DetailRow>
                 <DetailLabel>등록일</DetailLabel>
                 <DetailValue>
-                  {new Date(selectedShopDetail.createdAt).toLocaleString()}
+                  {new Date(selectedShopDetail.registerAt).toLocaleString()}
                 </DetailValue>
               </DetailRow>
             </ModalBody>

@@ -36,13 +36,28 @@ export const adminUserAPI = {
 
 // 샵 관리 API
 export const adminShopAPI = {
-  getShops: (status?: string, page: number = 0, size: number = 20) =>
-    axiosInstance.get<PageResponse<AdminShop>>("/admin/shops", {
-      params: { status, page, size },
-    }),
+  getShops: (
+    shopStatus?: string,
+    accountStatus?: string,
+    page: number = 0,
+    size: number = 20,
+  ) => {
+    const params: any = { page, size };
+
+    if (shopStatus) params.shopStatus = shopStatus;
+    if (accountStatus) params.accountStatus = accountStatus;
+
+    return axiosInstance.get("/admin/shops", { params });
+  },
 
   getShopDetail: (shopId: number) =>
     axiosInstance.get<ShopDetail>(`/admin/shops/${shopId}`),
+
+  activeShopAccount: (shopId: number) =>
+    axiosInstance.patch(`/admin/shops/${shopId}/activate-account`),
+
+  suspendShopAccount: (shopId: number) =>
+    axiosInstance.patch(`/admin/shops/${shopId}/suspend-account`),
 
   approveShop: (shopId: number) =>
     axiosInstance.patch(`/admin/shops/${shopId}/approve`),

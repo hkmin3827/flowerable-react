@@ -7,6 +7,8 @@ import { ShopDetailResponse } from "@/features/shop/types";
 import { chatAPI } from "@/features/chat/api";
 import { useAuthStore } from "@/features/auth/store";
 import { colors, LoadingContainer } from "@/shared/ui/CommonStyles";
+import { ChatRoomEnterReq } from "@/features/chat/types";
+import ChatRoomModal from "@/features/chat/components/ChatRoomModal";
 
 const Container = styled.div`
   max-width: 80rem;
@@ -167,6 +169,8 @@ const ShopDetailPage: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
   const [shop, setShop] = useState<ShopDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [chatRoom, setChatRoom] = useState<ChatRoomEnterReq | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (shopId) {
@@ -210,12 +214,14 @@ const ShopDetailPage: React.FC = () => {
     }
 
     try {
-      const response = await chatAPI.getOrCreateChatRoom(Number(shopId));
-      const chatRoomId = response.data;
-      navigate("/chats");
+      const res = await chatAPI.enterChatRoom(Number(shopId));
+
+      setChatRoom(res.data);
+
+      setChatOpen(true);
     } catch (error) {
-      console.error("Failed to create chat room:", error);
-      alert("문의하기에 실패했습니다.");
+      console.error("Failed to open chat:", error);
+      alert("문의하기 실패");
     }
   };
 
@@ -238,51 +244,60 @@ const ShopDetailPage: React.FC = () => {
   const onSaleFlowers = shop.shopFlowers.filter((flower) => flower.onSale);
 
   return (
-    <Container>
-      <ShopCard>
-        <ShopName>{shop.shopName}</ShopName>
+    <>
+      <Container>
+        <ShopCard>
+          <ShopName>{shop.shopName}</ShopName>
 
-        {shop.description && <Description>{shop.description}</Description>}
+          {shop.description && <Description>{shop.description}</Description>}
 
-        <InfoGroup>
-          <InfoItem>
-            <MapPin size={20} />
-            <span>{shop.address}</span>
-          </InfoItem>
-          <InfoItem>
-            <Phone size={20} />
-            <span>{shop.telnum}</span>
-          </InfoItem>
-        </InfoGroup>
+          <InfoGroup>
+            <InfoItem>
+              <MapPin size={20} />
+              <span>{shop.address}</span>
+            </InfoItem>
+            <InfoItem>
+              <Phone size={20} />
+              <span>{shop.telnum}</span>
+            </InfoItem>
+          </InfoGroup>
 
-        <ButtonGroup>
-          <ActionButton variant="primary" onClick={handleOrder}>
-            <ShoppingCart size={20} />
-            주문하기
-          </ActionButton>
-          <ActionButton variant="secondary" onClick={handleInquiry}>
-            <MessageCircle size={20} />
-            문의하기
-          </ActionButton>
-        </ButtonGroup>
-      </ShopCard>
+          <ButtonGroup>
+            <ActionButton variant="primary" onClick={handleOrder}>
+              <ShoppingCart size={20} />
+              주문하기
+            </ActionButton>
+            <ActionButton variant="secondary" onClick={handleInquiry}>
+              <MessageCircle size={20} />
+              문의하기
+            </ActionButton>
+          </ButtonGroup>
+        </ShopCard>
 
-      <FlowersSection>
-        <SectionTitle>판매 중인 꽃</SectionTitle>
-        {onSaleFlowers.length > 0 ? (
-          <FlowerGrid>
-            {onSaleFlowers.map((flower) => (
-              <FlowerCard key={flower.id}>
-                <FlowerName>{flower.flowerName}</FlowerName>
-                <FlowerPrice>{flower.price.toLocaleString()}원</FlowerPrice>
-              </FlowerCard>
-            ))}
-          </FlowerGrid>
-        ) : (
-          <EmptyState>판매 중인 꽃이 없습니다</EmptyState>
-        )}
-      </FlowersSection>
-    </Container>
+        <FlowersSection>
+          <SectionTitle>판매 중인 꽃</SectionTitle>
+          {onSaleFlowers.length > 0 ? (
+            <FlowerGrid>
+              {onSaleFlowers.map((flower) => (
+                <FlowerCard key={flower.id}>
+                  <FlowerName>{flower.flowerName}</FlowerName>
+                  <FlowerPrice>{flower.price.toLocaleString()}원</FlowerPrice>
+                </FlowerCard>
+              ))}
+            </FlowerGrid>
+          ) : (
+            <EmptyState>판매 중인 꽃이 없습니다</EmptyState>
+          )}
+        </FlowersSection>
+      </Container>
+      {chatOpen && chatRoom && (
+        <ChatRoomModal
+          chatRoom={chatRoom}
+          userType={user?.role ?? ""}
+          onClose={() => setChatOpen(false)}
+        />
+      )}
+    </>
   );
 };
 

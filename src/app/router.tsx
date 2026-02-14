@@ -4,7 +4,7 @@ import { useAuthStore } from "@/features/auth/store";
 // Layouts
 import { MainLayout } from "./layouts/MainLayout";
 import { ShopLayout } from "./layouts/ShopLayout";
-import { AdminLayout } from "./layouts/AdminLayout";
+import AdminLayout from "./layouts/AdminLayout";
 
 // Pages - Auth
 import { LoginPage } from "@/pages/auth/LoginPage";
@@ -12,7 +12,6 @@ import { SignupPage } from "@/pages/auth/SignupPage";
 import { OAuthCompleteProfile } from "@/pages/auth/OAuthCompleteProfile";
 
 // common
-import ChatListPage from "@/pages/common/ChatListPage";
 
 // Pages - User
 import { HomePage } from "@/pages/user/HomePage";
@@ -36,11 +35,15 @@ import { ShopWrappingPage } from "@/pages/shop/ShopWrappingPage";
 import ShopDashboardPage from "@/pages/shop/ShopDashboardPage";
 
 // Pages - Admin
-import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
 import OAuthCallback from "@/pages/auth/OAuthCallback";
 import { ShopManageLayout } from "./layouts/ShopManageLayout";
 import ShopOrderDetailPage from "@/pages/shop/ShopOrderDetailPage";
 import { ShopPendingHome } from "@/pages/shop/ShopPendingHome";
+import AdminAccountManagePage from "@/pages/admin/AdminAccountManagePage";
+import AdminShopManagePage from "@/pages/admin/AdminShopManagePage";
+import AdminOrderMonitorPage from "@/pages/admin/AdminOrderMonitorPage";
+import AdminFlowerManagePage from "@/pages/admin/AdminFlowerManagePage";
+import ChatListPage from "@/pages/common/ChatListPage";
 
 // Protected Route Component
 const ProtectedRoute = ({
@@ -205,19 +208,30 @@ export const router = createBrowserRouter([
       },
     ],
   },
-
   // Admin routes
   {
     path: "/admin",
-    element: (
-      <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
-        <AdminLayout />
-      </ProtectedRoute>
-    ),
+    element: <AdminLayout />,
     children: [
       {
         index: true,
-        element: <AdminDashboardPage />,
+        element: <AdminAccountManagePage />,
+      },
+      {
+        path: "accounts",
+        element: <AdminAccountManagePage />,
+      },
+      {
+        path: "shops",
+        element: <AdminShopManagePage />,
+      },
+      {
+        path: "orders",
+        element: <AdminOrderMonitorPage />,
+      },
+      {
+        path: "flowers",
+        element: <AdminFlowerManagePage />,
       },
     ],
   },

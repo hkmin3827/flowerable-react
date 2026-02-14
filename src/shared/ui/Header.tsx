@@ -6,6 +6,7 @@ import { useLogout } from "@/features/auth/hooks";
 import { useCartCount } from "@/features/cart/hooks";
 import logo from "../../images/logos/flowerable로고배경제거.png";
 import { NotificationDropdown } from "@/features/notification/components/NotificationDropdown";
+import { useUnreadNotificationCount } from "@/features/notification/hooks";
 
 export const Header = () => {
   const { isAuthenticated, user } = useAuthStore();
@@ -16,6 +17,7 @@ export const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const { data: unreadCount } = useUnreadNotificationCount(isAuthenticated);
 
   const handleLogout = () => {
     logout();
@@ -121,6 +123,11 @@ export const Header = () => {
                 title="알림"
               >
                 🔔
+                {(unreadCount ?? 0) > 0 && (
+                  <NotificationBadge>
+                    {unreadCount! > 99 ? "99+" : unreadCount}
+                  </NotificationBadge>
+                )}
               </IconButton>
               {notificationOpen && (
                 <NotificationDropdown
@@ -534,6 +541,22 @@ const CartButton = styled.button`
 `;
 
 const CartBadge = styled.span`
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 1.2rem;
+  height: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+`;
+
+const NotificationBadge = styled.span`
   position: absolute;
   top: 0;
   right: 0;

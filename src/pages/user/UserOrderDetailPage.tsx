@@ -1,10 +1,241 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import styled from "styled-components";
 import { userOrderAPI } from "@/features/order/api";
 import { OrderDetail } from "@/features/order/types";
 import { format } from "date-fns";
 import { ArrowLeft, MapPin, Phone } from "lucide-react";
 import { OrderStatus } from "@/shared/types";
+import { colors, LoadingContainer } from "@/shared/ui/CommonStyles";
+
+const Container = styled.div`
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+`;
+
+const BackButton = styled.button`
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: ${colors.background};
+  }
+`;
+
+const PageTitle = styled.h1`
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: ${colors.text};
+`;
+
+const Card = styled.div`
+  background: ${colors.white};
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+`;
+
+const OrderInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const OrderNumber = styled.p`
+  font-size: 0.875rem;
+  color: ${colors.textSecondary};
+`;
+
+const OrderDate = styled.p`
+  font-size: 0.875rem;
+  color: ${colors.textSecondary};
+`;
+
+const StatusBadge = styled.span<{ status: OrderStatus }>`
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  ${({ status }) => {
+    switch (status) {
+      case "REQUESTED":
+        return `background: ${colors.errorLight}; color: ${colors.error};`;
+      case "ACCEPTED":
+        return `background: ${colors.infoLight}; color: ${colors.info};`;
+      case "READY":
+        return `background: ${colors.successLight}; color: ${colors.success};`;
+      case "COMPLETED":
+        return `background: #F3F4F6; color: #6B7280;`;
+      case "CANCELED":
+        return `background: #F3F4F6; color: #9CA3AF;`;
+      default:
+        return `background: #F3F4F6; color: #6B7280;`;
+    }
+  }}
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: ${colors.text};
+  margin-bottom: 1rem;
+`;
+
+const InfoGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const InfoItem = styled.div`
+  display: flex;
+  align-items: center;
+
+  gap: 0.5rem;
+  color: ${colors.textSecondary};
+`;
+
+const InfoLabel = styled.span`
+  font-weight: 500;
+  color: ${colors.text};
+`;
+
+const ItemList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const OrderItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid ${colors.border};
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+`;
+
+const ItemInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const ItemName = styled.p`
+  font-weight: 500;
+  color: ${colors.text};
+`;
+
+const ItemQuantity = styled.p`
+  font-size: 0.875rem;
+  color: ${colors.textSecondary};
+`;
+
+const ItemPrice = styled.p`
+  font-weight: bold;
+  color: ${colors.text};
+`;
+
+const PriceGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const PriceRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const PriceLabel = styled.span`
+  color: ${colors.textSecondary};
+`;
+
+const TotalRow = styled(PriceRow)`
+  border-top: 1px solid ${colors.border};
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+`;
+
+const TotalLabel = styled.span`
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: ${colors.text};
+`;
+
+const TotalPrice = styled.span`
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: ${colors.primary};
+`;
+
+const Message = styled.p`
+  color: ${colors.textSecondary};
+  line-height: 1.6;
+`;
+
+const Button = styled.button`
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: ${colors.error};
+  color: ${colors.white};
+
+  &:hover:not(:disabled) {
+    background: #dc2626;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const DisabledButton = styled(Button)`
+  background: ${colors.border};
+  color: ${colors.textSecondary};
+  cursor: not-allowed;
+
+  &:hover {
+    background: ${colors.border};
+  }
+`;
 
 const UserOrderDetailPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -14,9 +245,7 @@ const UserOrderDetailPage: React.FC = () => {
   const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
-    if (orderId) {
-      fetchOrderDetail();
-    }
+    if (orderId) fetchOrderDetail();
   }, [orderId]);
 
   const fetchOrderDetail = async () => {
@@ -57,154 +286,113 @@ const UserOrderDetailPage: React.FC = () => {
     return statusMap[status];
   };
 
-  const getStatusColor = (status: OrderStatus) => {
-    const colorMap = {
-      REQUESTED: "bg-yellow-100 text-yellow-800",
-      ACCEPTED: "bg-blue-100 text-blue-800",
-      READY: "bg-green-100 text-green-800",
-      COMPLETED: "bg-gray-100 text-gray-800",
-      CANCELED: "bg-red-100 text-red-800",
-    };
-    return colorMap[status];
-  };
-
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center text-gray-500">로딩 중...</div>
-      </div>
+      <Container>
+        <LoadingContainer>로딩 중...</LoadingContainer>
+      </Container>
     );
   }
 
   if (!order) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center text-gray-500">주문을 찾을 수 없습니다</div>
-      </div>
+      <Container>
+        <LoadingContainer>주문을 찾을 수 없습니다</LoadingContainer>
+      </Container>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* 헤더 */}
-      <div className="flex items-center gap-4 mb-8">
-        <button
-          onClick={() => navigate("/orders")}
-          className="p-2 hover:bg-gray-100 rounded-full"
-        >
+    <Container>
+      <Header>
+        <BackButton onClick={() => navigate("/orders")}>
           <ArrowLeft size={24} />
-        </button>
-        <h1 className="text-3xl font-bold">주문 상세</h1>
-      </div>
+        </BackButton>
+        <PageTitle>주문 상세</PageTitle>
+      </Header>
 
-      {/* 주문 정보 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <p className="text-sm text-gray-500 mb-1">
-              주문번호: {order.orderNumber}
-            </p>
-            <p className="text-sm text-gray-500">
+      <Card>
+        <CardHeader>
+          <OrderInfo>
+            <OrderNumber>주문번호: {order.orderNumber}</OrderNumber>
+            <OrderDate>
               {format(new Date(order.createdAt), "yyyy년 MM월 dd일 HH:mm")}
-            </p>
-          </div>
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}
-          >
+            </OrderDate>
+          </OrderInfo>
+          <StatusBadge status={order.status}>
             {getStatusText(order.status)}
-          </span>
-        </div>
-      </div>
+          </StatusBadge>
+        </CardHeader>
+      </Card>
 
-      {/* 가게 정보 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4">가게 정보</h2>
-        <div className="space-y-3">
-          <p className="font-medium text-lg">{order.shopName}</p>
-          <div className="flex items-start gap-2 text-gray-600">
-            <MapPin size={20} className="flex-shrink-0 mt-1" />
-            <span>{order.shopAddress}</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-600">
+      <Card>
+        <SectionTitle>가게 정보</SectionTitle>
+        <InfoGroup>
+          <InfoItem>
+            <InfoLabel>가게명 : {order.shopName}</InfoLabel>
+          </InfoItem>
+          <InfoItem>
+            <MapPin size={20} />
+            <InfoLabel>{order.shopAddress}</InfoLabel>
+          </InfoItem>
+          <InfoItem>
             <Phone size={20} />
-            <span>{order.shopPhoneNumber}</span>
-          </div>
-        </div>
-      </div>
 
-      {/* 주문 상품 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4">주문 상품</h2>
-        <div className="space-y-4">
-          {order.items.map((item, index) => (
-            <div key={index} className="flex gap-4 pb-4 border-b last:border-0">
-              <div className="flex-1">
-                <p className="font-medium">{item.flowerName}</p>
-                <p className="text-sm text-gray-600">{item.quantity}개</p>
-              </div>
-              <p className="font-bold">
-                {(item.itemTotalPrice * item.quantity).toLocaleString()}원
-              </p>
-            </div>
+            <InfoLabel>{order.opponentTelnum}</InfoLabel>
+          </InfoItem>
+        </InfoGroup>
+      </Card>
+
+      <Card>
+        <SectionTitle>주문 상품</SectionTitle>
+        <ItemList>
+          {(order.items ?? []).map((item, index) => (
+            <OrderItem key={index}>
+              <ItemInfo>
+                <ItemName>{item.flowerName}</ItemName>
+                <ItemQuantity>{item.quantity}개</ItemQuantity>
+              </ItemInfo>
+              <ItemPrice>{item.itemTotalPrice}원</ItemPrice>
+            </OrderItem>
           ))}
-        </div>
-      </div>
+        </ItemList>
+      </Card>
 
-      {/* 결제 정보 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4">결제 정보</h2>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span className="text-gray-600">상품 금액</span>
-            <span>{order.totalFlowerPrice.toLocaleString()}원</span>
-          </div>
+      <Card>
+        <SectionTitle>결제 정보</SectionTitle>
+        <PriceGroup>
+          <PriceRow>
+            <PriceLabel>상품 금액</PriceLabel>
+            <span>{order.totalFlowerPrice}원</span>
+          </PriceRow>
           {order.wrappingColorName && (
-            <div className="flex justify-between">
-              <span className="text-gray-600">
-                포장 ({order.wrappingColorName})
-              </span>
-              <span>{order.wrappingExtraPrice.toLocaleString()}원</span>
-            </div>
+            <PriceRow>
+              <PriceLabel>포장 ({order.wrappingColorName})</PriceLabel>
+              <span>{order.wrappingExtraPrice}원</span>
+            </PriceRow>
           )}
-          <div className="border-t pt-2 mt-2">
-            <div className="flex justify-between text-lg font-bold">
-              <span>총 결제 금액</span>
-              <span className="text-pink-600">
-                {order.totalPrice.toLocaleString()}원
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+          <TotalRow>
+            <TotalLabel>총 금액</TotalLabel>
+            <TotalPrice>{order.totalPrice}원</TotalPrice>
+          </TotalRow>
+        </PriceGroup>
+      </Card>
 
-      {/* 요청사항 */}
       {order.message && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">요청사항</h2>
-          <p className="text-gray-700">{order.message}</p>
-        </div>
+        <Card>
+          <SectionTitle>요청사항</SectionTitle>
+          <Message>{order.message}</Message>
+        </Card>
       )}
 
-      {/* 취소 버튼 */}
-      {order.status === "REQUESTED" && (
-        <button
-          onClick={handleCancelOrder}
-          disabled={cancelling}
-          className="w-full py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50"
-        >
+      {order.status === "REQUESTED" ? (
+        <Button onClick={handleCancelOrder} disabled={cancelling}>
           {cancelling ? "취소 중..." : "주문 취소"}
-        </button>
+        </Button>
+      ) : (
+        <DisabledButton disabled>취소 불가</DisabledButton>
       )}
-
-      {order.status !== "REQUESTED" && order.status !== "CANCELED" && (
-        <button
-          disabled
-          className="w-full py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed"
-        >
-          취소 불가
-        </button>
-      )}
-    </div>
+    </Container>
   );
 };
 

@@ -12,8 +12,6 @@ interface NotificationDropdownProps {
   onClose: () => void;
 }
 
-type TabType = "ALL" | "ORDER" | "CHAT";
-
 const Container = styled.div`
   position: absolute;
   right: 0;
@@ -29,30 +27,6 @@ const Container = styled.div`
 
   @media (max-width: 640px) {
     width: calc(100vw - 2rem);
-  }
-`;
-
-const TabContainer = styled.div`
-  display: flex;
-  border-bottom: 1px solid ${colors.border};
-`;
-
-const Tab = styled.button<{ active: boolean }>`
-  flex: 1;
-  padding: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: ${({ active }) => (active ? colors.primary : colors.textSecondary)};
-  border-bottom: 2px solid
-    ${({ active }) => (active ? colors.primary : "transparent")};
-  margin-bottom: -1px;
-
-  &:hover {
-    color: ${colors.primary};
   }
 `;
 
@@ -127,7 +101,6 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<TabType>("ALL");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -139,30 +112,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     setPage(0);
     setHasMore(true);
     fetchNotifications(0);
-  }, [activeTab]);
+  }, []);
 
   const fetchNotifications = async (pageNum: number) => {
     if (loading || !hasMore) return;
 
     setLoading(true);
     try {
-      let response;
-
-      if (activeTab === "ALL") {
-        response = await notificationAPI.getAll(pageNum, 10);
-      } else if (activeTab === "ORDER") {
-        response = await notificationAPI.getByType(
-          NotificationType.ORDER_CREATED,
-          pageNum,
-          10,
-        );
-      } else {
-        response = await notificationAPI.getByType(
-          NotificationType.MESSAGE_RECEIVED,
-          pageNum,
-          10,
-        );
-      }
+      const response = await notificationAPI.getAll(pageNum, 10);
 
       const newNotifications = response.data.content;
       setNotifications((prev) => [...prev, ...newNotifications]);
@@ -217,21 +174,6 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   return (
     <Container>
-      <TabContainer>
-        <Tab active={activeTab === "ALL"} onClick={() => setActiveTab("ALL")}>
-          전체
-        </Tab>
-        <Tab
-          active={activeTab === "ORDER"}
-          onClick={() => setActiveTab("ORDER")}
-        >
-          주문
-        </Tab>
-        <Tab active={activeTab === "CHAT"} onClick={() => setActiveTab("CHAT")}>
-          채팅
-        </Tab>
-      </TabContainer>
-
       <NotificationList ref={listRef} onScroll={handleScroll}>
         {notifications.length === 0 && !loading ? (
           <EmptyState>알림이 없습니다</EmptyState>

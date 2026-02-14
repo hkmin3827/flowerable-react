@@ -3,9 +3,9 @@ import { AccountStatus, OrderStatus, ShopStatus } from "@/shared/types";
 // 관리자 사용자 타입
 export interface AdminUser {
   id: number;
-  email: string;
+  accountEmail: string;
   name: string;
-  telnum: string;
+  accountTelnum: string;
   accountStatus: AccountStatus;
   createdAt: string;
 }
@@ -14,21 +14,24 @@ export interface AdminUser {
 export interface AdminShop {
   id: number;
   shopName: string;
-  email: string;
+  accountEmail: string;
+  regionDesc: string;
+  districtDesc: string;
   address: string;
-  telnum: string;
+  accountTelnum: string;
+  accountStatus: AccountStatus;
   status: ShopStatus;
-  createdAt: string;
+  registerAt: string;
 }
 
 // 관리자 꽃 타입
 export interface AdminFlower {
   id: number;
-  flowerKorName: string;
+  name: string;
   active: boolean;
-  family: string;
-  meaning: string;
-  season: string;
+  floralLang: string;
+  category: string;
+  imageUrl: string;
 }
 
 // 관리자 주문 타입
@@ -49,7 +52,7 @@ export interface UserDetail {
   id: number;
   email: string;
   name: string;
-  telnum: string;
+  accountTellnum: string;
   active: boolean;
   createdAt: string;
   deletedAt?: string;
@@ -66,23 +69,21 @@ export interface ShopDetail {
   telnum: string;
   status: string;
   email: string;
-  createdAt: string;
+  registerAt: string;
 }
 
 // 꽃 생성 요청
 export interface FlowerCreateReq {
-  flowerKorName: string;
-  family: string;
-  meaning: string;
-  season: string;
+  name: string;
+  floralLang: string;
+  category: string;
 }
 
 // 꽃 수정 요청
 export interface FlowerUpdateReq {
-  flowerKorName?: string;
-  family?: string;
-  meaning?: string;
-  season?: string;
+  name?: string;
+  floralLang?: string;
+  category?: string;
 }
 
 // 주문 검색 조건

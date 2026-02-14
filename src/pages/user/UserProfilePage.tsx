@@ -65,13 +65,11 @@ export const UserProfilePage = () => {
       if (error.response?.data) {
         const serverError = error.response.data;
 
-        // 1️⃣ 단일 message 구조
         if (serverError.message) {
           alert(serverError.message);
           return;
         }
 
-        // 2️⃣ validation errors 배열 구조
         if (
           Array.isArray(serverError.errors) &&
           serverError.errors.length > 0

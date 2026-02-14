@@ -1,18 +1,24 @@
-export interface ChatRoom {
+export interface ChatRoomListRes {
   id: number;
   userId: number;
   shopId: number;
-  userName: string;
-  shopName: string;
+  opponentName: string;
   lastMessage: string;
   lastMessageAt: string;
   unreadCount: number;
 }
 
+export interface ChatRoomEnterReq {
+  id: number;
+  userId: number;
+  shopId: number;
+  userName: string;
+  shopName: string;
+}
+
 export interface ChatMessage {
   id: number;
-  chatRoomId: number;
-  senderType: "ROLE_USER" | "ROLE_SHOP";
+  senderType: "USER" | "SHOP";
   senderId: number;
   content: string;
   isRead: boolean;
@@ -20,6 +26,6 @@ export interface ChatMessage {
 }
 
 export interface ChatMessageSendReq {
-  targetId: number;
+  chatRoomId: number;
   content: string;
 }

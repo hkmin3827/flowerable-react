@@ -1,128 +1,137 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { chatAPI } from "@/features/chat/api";
-import { ChatRoom } from "@/features/chat/types";
 import ChatRoomModal from "@/features/chat/components/ChatRoomModal";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useAuthStore } from "@/features/auth/store";
-import { colors } from "@/shared/ui/CommonStyles";
+import { colors, LoadingContainer } from "@/shared/ui/CommonStyles";
+import { MessageSquare, ChevronRight } from "lucide-react";
+
+export interface ChatRoomListRes {
+  id: number;
+  userId: number;
+  shopId: number;
+  opponentName: string;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+  unreadCount: number;
+}
 
 const Container = styled.div`
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 24rem;
-  background: ${colors.white};
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
-  z-index: 50;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+`;
+
+const PageTitle = styled.h1`
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: ${colors.text};
+  margin-bottom: 2rem;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 4rem 1rem;
+`;
+
+const EmptyIcon = styled(MessageSquare)`
+  margin: 0 auto 1rem;
+  color: #d1d5db;
+`;
+
+const EmptyText = styled.p`
+  color: ${colors.textSecondary};
+  font-size: 1rem;
+`;
+
+const ChatList = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+`;
 
-  @media (max-width: 640px) {
-    width: 100%;
+const ChatCard = styled.div`
+  background: ${colors.white};
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
   }
 `;
 
-const Header = styled.div`
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid ${colors.border};
+const ChatHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+`;
+
+const ChatInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const OpponentName = styled.h3`
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: ${colors.text};
+`;
+
+const UnreadBadge = styled.span`
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: ${colors.errorLight};
+  color: ${colors.error};
+`;
+
+const ChatFooter = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
-const Title = styled.h2`
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: ${colors.text};
-`;
-
-const ChatList = styled.div`
-  flex: 1;
-  overflow-y: auto;
-`;
-
-const LoadingText = styled.div`
-  padding: 2rem;
-  text-align: center;
-  color: ${colors.textSecondary};
-`;
-
-const EmptyText = styled.div`
-  padding: 2rem;
-  text-align: center;
-  color: ${colors.textSecondary};
-`;
-
-const ChatRoomItem = styled.div`
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid ${colors.border};
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background: ${colors.background};
-  }
-`;
-
-const ChatRoomContent = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-`;
-
-const ChatRoomMain = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const ChatRoomName = styled.h3`
-  font-weight: 500;
-  color: ${colors.text};
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const LastMessage = styled.p`
-  font-size: 0.875rem;
-  color: ${colors.textSecondary};
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 0.25rem;
-`;
-
-const ChatRoomSide = styled.div`
-  margin-left: 0.75rem;
+const MessageInfo = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
   gap: 0.25rem;
 `;
 
-const TimeText = styled.span`
-  font-size: 0.75rem;
+const LastMessage = styled.p`
+  font-size: 1rem;
+  font-weight: 500;
+  color: ${colors.text};
+`;
+
+const TimeText = styled.p`
+  font-size: 0.875rem;
+  color: ${colors.textSecondary};
+`;
+
+const ArrowIcon = styled(ChevronRight)`
   color: #9ca3af;
+  flex-shrink: 0;
 `;
 
-const UnreadBadge = styled.span`
-  background: ${colors.error};
-  color: ${colors.white};
-  font-size: 0.75rem;
-  border-radius: 9999px;
-  padding: 0.125rem 0.5rem;
-  min-width: 1.5rem;
-  text-align: center;
-`;
-
-const ChatListPage = () => {
-  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
-  const [selectedChatRoom, setSelectedChatRoom] = useState<ChatRoom | null>(
-    null,
-  );
+const ChatListPage: React.FC = () => {
+  const [chatRooms, setChatRooms] = useState<ChatRoomListRes[]>([]);
+  const [selectedChatRoom, setSelectedChatRoom] =
+    useState<ChatRoomListRes | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuthStore();
 
@@ -132,8 +141,8 @@ const ChatListPage = () => {
 
   const fetchChatRooms = async () => {
     try {
-      const response = await chatAPI.getChatRooms(0, 50);
-      setChatRooms(response.data.content);
+      const response = await chatAPI.getChatRooms();
+      setChatRooms(response.data);
     } catch (error) {
       console.error("Failed to fetch chat rooms:", error);
     } finally {
@@ -141,40 +150,48 @@ const ChatListPage = () => {
     }
   };
 
-  const handleChatRoomClick = (chatRoom: ChatRoom) => {
+  const handleChatRoomClick = (chatRoom: ChatRoomListRes) => {
     setSelectedChatRoom(chatRoom);
   };
+
+  if (loading) {
+    return (
+      <Container>
+        <LoadingContainer>로딩 중...</LoadingContainer>
+      </Container>
+    );
+  }
 
   return (
     <>
       <Container>
-        <Header>
-          <Title>채팅</Title>
-        </Header>
+        <PageTitle>채팅</PageTitle>
 
-        <ChatList>
-          {loading ? (
-            <LoadingText>로딩 중...</LoadingText>
-          ) : chatRooms.length === 0 ? (
+        {chatRooms.length === 0 ? (
+          <EmptyState>
+            <EmptyIcon size={64} />
             <EmptyText>채팅방이 없습니다</EmptyText>
-          ) : (
-            chatRooms.map((room) => (
-              <ChatRoomItem
-                key={room.id}
-                onClick={() => handleChatRoomClick(room)}
-              >
-                <ChatRoomContent>
-                  <ChatRoomMain>
-                    <ChatRoomName>
-                      {user?.role === "ROLE_USER"
-                        ? room.shopName
-                        : room.userName}
-                    </ChatRoomName>
+          </EmptyState>
+        ) : (
+          <ChatList>
+            {chatRooms.map((room) => (
+              <ChatCard key={room.id} onClick={() => handleChatRoomClick(room)}>
+                <ChatHeader>
+                  <ChatInfo>
+                    <OpponentName>{room.opponentName}</OpponentName>
+                  </ChatInfo>
+
+                  {room.unreadCount > 0 && (
+                    <UnreadBadge>{room.unreadCount} unread</UnreadBadge>
+                  )}
+                </ChatHeader>
+
+                <ChatFooter>
+                  <MessageInfo>
                     <LastMessage>
                       {room.lastMessage || "메시지가 없습니다"}
                     </LastMessage>
-                  </ChatRoomMain>
-                  <ChatRoomSide>
+
                     {room.lastMessageAt && (
                       <TimeText>
                         {formatDistanceToNow(new Date(room.lastMessageAt), {
@@ -183,15 +200,14 @@ const ChatListPage = () => {
                         })}
                       </TimeText>
                     )}
-                    {room.unreadCount > 0 && (
-                      <UnreadBadge>{room.unreadCount}</UnreadBadge>
-                    )}
-                  </ChatRoomSide>
-                </ChatRoomContent>
-              </ChatRoomItem>
-            ))
-          )}
-        </ChatList>
+                  </MessageInfo>
+
+                  <ArrowIcon size={24} />
+                </ChatFooter>
+              </ChatCard>
+            ))}
+          </ChatList>
+        )}
       </Container>
 
       {selectedChatRoom && (

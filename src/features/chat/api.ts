@@ -1,21 +1,16 @@
 import { axiosInstance } from "@/shared/api/axios";
-import { PageResponse } from "@/shared/types";
-import { ChatMessage, ChatMessageSendReq, ChatRoom } from "./types";
+import { ChatMessage, ChatMessageSendReq, ChatRoomEnterReq } from "./types";
+import { ChatRoomListRes } from "@/pages/common/ChatListPage";
 
 export const chatAPI = {
-  getChatRooms: (page: number = 0, size: number = 20) =>
-    axiosInstance.get<PageResponse<ChatRoom>>("/chats/rooms", {
-      params: { page, size },
-    }),
-
+  getChatRooms: () => {
+    return axiosInstance.get<ChatRoomListRes[]>("/chats/rooms");
+  },
   getChatMessages: (chatRoomId: number) =>
-    axiosInstance.get<ChatMessage[]>(`/chats/rooms/${chatRoomId}/messages`),
+    axiosInstance.get<ChatMessage[]>(`/chats/${chatRoomId}/messages`),
 
-  getOrCreateChatRoom: (targetId: number) =>
-    axiosInstance.post<number>("/chats/rooms", null, { params: { targetId } }),
-
-  enterChatRoom: (chatRoomId: number) =>
-    axiosInstance.patch(`/chats/${chatRoomId}/enter`),
+  enterChatRoom: (targetId: number) =>
+    axiosInstance.post<ChatRoomEnterReq>(`/chats/chat-room/${targetId}`),
 
   sendMessage: (message: ChatMessageSendReq) =>
     axiosInstance.post("/chats/message", message),

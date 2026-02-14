@@ -23,11 +23,15 @@ export interface OrderList {
   status: OrderStatus;
   totalPrice: number;
   createdAt: string;
+  shopName: string;
+  userName: string;
+  totalCount: number;
 }
 
 export interface OrderDetail {
   orderId: number;
   orderNumber: string;
+  opponentTelnum: string;
   status: OrderStatus;
   userId: number;
   userName: string;

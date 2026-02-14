@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { shopOrderAPI } from "@/features/order/api";
 import { OrderDetail } from "@/features/order/types";
 import { format } from "date-fns";
-import { ArrowLeft, User, Phone, X } from "lucide-react";
+import { ArrowLeft, Phone, User, X } from "lucide-react";
 import { OrderStatus } from "@/shared/types";
 import {
   colors,
@@ -122,6 +122,7 @@ const InfoGroup = styled.div`
 const InfoItem = styled.div`
   display: flex;
   align-items: center;
+
   gap: 0.5rem;
   color: ${colors.textSecondary};
 `;
@@ -216,7 +217,7 @@ const ButtonGroup = styled.div`
 `;
 
 const Button = styled.button<{
-  variant?: "primary" | "success" | "error" | "disabled";
+  variant?: "primary" | "success" | "error" | "info";
 }>`
   width: 100%;
   padding: 0.875rem 1.5rem;
@@ -231,6 +232,14 @@ const Button = styled.button<{
     switch (variant) {
       case "success":
         return `
+          background: ${colors.success};
+          color: ${colors.white};
+          &:hover:not(:disabled) {
+            background: #059669;
+          }
+        `;
+      case "info":
+        return `
           background: ${colors.info};
           color: ${colors.white};
           &:hover:not(:disabled) {
@@ -244,12 +253,6 @@ const Button = styled.button<{
           &:hover:not(:disabled) {
             background: #DC2626;
           }
-        `;
-      case "disabled":
-        return `
-          background: #D1D5DB;
-          color: #6B7280;
-          cursor: not-allowed;
         `;
       default:
         return `
@@ -412,6 +415,38 @@ const ShopOrderDetailPage: React.FC = () => {
     }
   };
 
+  const handleReadyOrder = async () => {
+    if (!order || !window.confirm("주문 준비가 완료되었습니까?")) return;
+
+    setProcessing(true);
+    try {
+      await shopOrderAPI.changeStatus(order.orderId, "READY");
+      alert("주문 준비가 완료되었습니다.");
+      fetchOrderDetail();
+    } catch (error) {
+      console.error("Failed to ready order:", error);
+      alert("상태 변경에 실패했습니다.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleCompleteOrder = async () => {
+    if (!order || !window.confirm("주문을 완료 처리하시겠습니까?")) return;
+
+    setProcessing(true);
+    try {
+      await shopOrderAPI.changeStatus(order.orderId, "COMPLETED");
+      alert("주문이 완료되었습니다.");
+      fetchOrderDetail();
+    } catch (error) {
+      console.error("Failed to complete order:", error);
+      alert("주문 완료에 실패했습니다.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const handleOpenCancelModal = () => {
     setShowCancelModal(true);
     setSelectedReason("");
@@ -504,6 +539,10 @@ const ShopOrderDetailPage: React.FC = () => {
               <User size={20} />
               <InfoLabel>{order.userName}</InfoLabel>
             </InfoItem>
+            <InfoItem>
+              <Phone size={20} />
+              <InfoLabel>{order.opponentTelnum}</InfoLabel>
+            </InfoItem>
           </InfoGroup>
         </Card>
 
@@ -515,7 +554,7 @@ const ShopOrderDetailPage: React.FC = () => {
                 <ItemInfo>
                   <ItemName>{item.flowerName}</ItemName>
                   <ItemQuantity>
-                    {item.flowerBasePrice} * {item.quantity}개
+                    {item.flowerBasePrice}원 * {item.quantity}개
                   </ItemQuantity>
                 </ItemInfo>
                 <ItemPrice>{item.itemTotalPrice}원</ItemPrice>
@@ -552,10 +591,11 @@ const ShopOrderDetailPage: React.FC = () => {
         )}
 
         <ButtonGroup>
+          {/* REQUESTED: 접수 / 취소 */}
           {order.status === "REQUESTED" && (
             <>
               <Button
-                variant="success"
+                variant="info"
                 onClick={handleAcceptOrder}
                 disabled={processing}
               >
@@ -571,21 +611,47 @@ const ShopOrderDetailPage: React.FC = () => {
             </>
           )}
 
-          {(order.status === "READY" || order.status === "ACCEPTED") && (
-            <Button
-              variant="error"
-              onClick={handleOpenCancelModal}
-              disabled={processing}
-            >
-              {processing ? "처리 중..." : "주문 취소"}
-            </Button>
+          {/* ACCEPTED: 준비완료 / 취소 */}
+          {order.status === "ACCEPTED" && (
+            <>
+              <Button
+                variant="success"
+                onClick={handleReadyOrder}
+                disabled={processing}
+              >
+                {processing ? "처리 중..." : "준비 완료"}
+              </Button>
+              <Button
+                variant="error"
+                onClick={handleOpenCancelModal}
+                disabled={processing}
+              >
+                주문 취소
+              </Button>
+            </>
           )}
 
-          {(order.status === "COMPLETED" || order.status === "CANCELED") && (
-            <Button variant="disabled" disabled>
-              처리 완료
-            </Button>
+          {/* READY: 완료 / 취소 */}
+          {order.status === "READY" && (
+            <>
+              <Button
+                variant="primary"
+                onClick={handleCompleteOrder}
+                disabled={processing}
+              >
+                {processing ? "처리 중..." : "완료"}
+              </Button>
+              <Button
+                variant="error"
+                onClick={handleOpenCancelModal}
+                disabled={processing}
+              >
+                주문 취소
+              </Button>
+            </>
           )}
+
+          {/* COMPLETED / CANCELED: 버튼 없음 */}
         </ButtonGroup>
       </Container>
 
