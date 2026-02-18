@@ -243,7 +243,6 @@ const AdminShopManagePage: React.FC = () => {
                 <TableRow>
                   <TableHeader>샵명</TableHeader>
                   <TableHeader>이메일</TableHeader>
-                  <TableHeader>주소</TableHeader>
                   <TableHeader>전화번호</TableHeader>
                   <TableHeader>상태</TableHeader>
                   <TableHeader>등록일</TableHeader>
@@ -259,7 +258,7 @@ const AdminShopManagePage: React.FC = () => {
                   >
                     <TableCell>{shop.shopName}</TableCell>
                     <TableCell>{shop.accountEmail}</TableCell>
-                    <TableCell>{shop.address}</TableCell>
+
                     <TableCell>{shop.accountTelnum}</TableCell>
                     <TableCell>{getStatusBadge(shop.status)}</TableCell>
                     <TableCell>
@@ -354,14 +353,15 @@ const AdminShopManagePage: React.FC = () => {
               </DetailRow>
               <DetailRow>
                 <DetailLabel>주소</DetailLabel>
-                <DetailValue>{selectedShopDetail.address}</DetailValue>
+                <DetailValue>
+                  {selectedShopDetail.regionDesc}{" "}
+                  {selectedShopDetail.districtDesc} {selectedShopDetail.address}
+                </DetailValue>
               </DetailRow>
-              {selectedShopDetail.description && (
-                <DetailRow>
-                  <DetailLabel>설명</DetailLabel>
-                  <DetailValue>{selectedShopDetail.description}</DetailValue>
-                </DetailRow>
-              )}
+              <DetailRow>
+                <DetailLabel>설명</DetailLabel>
+                <DetailValue>{selectedShopDetail.description}</DetailValue>
+              </DetailRow>
               <DetailRow>
                 <DetailLabel>상태</DetailLabel>
                 <DetailValue>

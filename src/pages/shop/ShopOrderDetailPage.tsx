@@ -583,13 +583,23 @@ const ShopOrderDetailPage: React.FC = () => {
           </PriceGroup>
         </Card>
 
-        {order.message && (
-          <Card>
-            <SectionTitle>요청사항</SectionTitle>
+        <Card>
+          <SectionTitle>요청사항</SectionTitle>
+          {order.message ? (
             <Message>{order.message}</Message>
+          ) : (
+            <Message>-</Message>
+          )}
+        </Card>
+        {order.status === "CANCELED" && (
+          <Card>
+            <SectionTitle>취소자</SectionTitle>
+            <p style={{ marginBottom: "20px" }}>{order.cancelBy}</p>
+            <hr />
+            <SectionTitle>취소 사유</SectionTitle>
+            <p>{order.cancelReason}</p>
           </Card>
         )}
-
         <ButtonGroup>
           {/* REQUESTED: 접수 / 취소 */}
           {order.status === "REQUESTED" && (

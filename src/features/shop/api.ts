@@ -68,7 +68,7 @@ export const shopApi = {
   getTop5Flowers: () =>
     axiosInstance.get<FlowerOrderStats[]>("/shopflowers/dashboard/top-flowers"),
 
-  // 샵 이미지 목록 조회
+  // 샵 이미지 목록 조회 (공개용)
   getShopImages: (
     shopId: number,
     lastId?: number,
@@ -92,6 +92,46 @@ export const shopApi = {
       .get<ShopImageResponse>(`/shopimages/${shopId}/thumbnail`)
       .then((res) => res.data)
       .catch(() => null),
+
+  // === 내 샵 이미지 관리 API ===
+
+  // 내 샵 이미지 목록 조회
+  getMyShopImages: (lastId?: number): Promise<ShopImageResponse[]> => {
+    const params = new URLSearchParams();
+    if (lastId) params.append("lastId", lastId.toString());
+    return axiosInstance
+      .get<ShopImageResponse[]>(`/my-shop/images?${params.toString()}`)
+      .then((res) => res.data);
+  },
+
+  // 내 샵 최신 이미지 조회
+  getMyLatestImages: (): Promise<ShopImageResponse[]> =>
+    axiosInstance
+      .get<ShopImageResponse[]>("/my-shop/images/latest")
+      .then((res) => res.data),
+
+  // 내 샵 대표 이미지 조회
+  getMyThumbnail: (): Promise<ShopImageResponse | null> =>
+    axiosInstance
+      .get<ShopImageResponse>("/my-shop/images/thumbnail")
+      .then((res) => res.data)
+      .catch(() => null),
+
+  // 샵 이미지 업로드
+  uploadImages: (imageUrls: string[]): Promise<void> =>
+    axiosInstance.post("/my-shop/images", { imageUrls }),
+
+  // 샵 이미지 삭제
+  deleteImage: (imageId: number): Promise<void> =>
+    axiosInstance.delete(`/my-shop/images/${imageId}`),
+
+  // 대표 이미지 설정
+  setThumbnail: (imageId: number): Promise<void> =>
+    axiosInstance.patch(`/my-shop/images/thumbnail/${imageId}/register`),
+
+  // 대표 이미지 해제
+  removeThumbnail: (imageId: number): Promise<void> =>
+    axiosInstance.patch(`/my-shop/images/thumbnail/${imageId}/delete`),
 
   // 포장 옵션 조회
   getWrappingOptions: (): Promise<WrappingOptionResponse> =>

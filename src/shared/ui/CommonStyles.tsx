@@ -235,7 +235,14 @@ export const SectionTitle = styled.h2`
 
 // 배지
 export const Badge = styled.span<{
-  variant?: "primary" | "success" | "error" | "warning" | "info" | "secondary";
+  variant?:
+    | "pending"
+    | "primary"
+    | "success"
+    | "error"
+    | "warning"
+    | "info"
+    | "secondary";
 }>`
   display: inline-block;
   padding: 0.25rem 0.75rem;
@@ -249,6 +256,11 @@ export const Badge = styled.span<{
         return `
           background: ${colors.primaryLight};
           color: ${colors.primary};
+        `;
+      case "pending":
+        return `
+          background: #f5e5f9;
+          color: #983cb1;
         `;
       case "success":
         return `
@@ -465,14 +477,15 @@ export const TabList = styled.div`
   margin-bottom: 1.5rem;
 `;
 
-export const Tab = styled.button<{ active?: boolean }>`
+export const Tab = styled.button<{ $active?: boolean }>`
   padding: 0.75rem 1.5rem;
   border: none;
   background: transparent;
-  color: ${({ active }) => (active ? colors.primary : colors.textSecondary)};
-  font-weight: ${({ active }) => (active ? "600" : "500")};
+  color: ${({ $active: $active }) =>
+    $active ? colors.primary : colors.textSecondary};
+  font-weight: ${({ $active: $active }) => ($active ? "600" : "500")};
   border-bottom: 2px solid
-    ${({ active }) => (active ? colors.primary : "transparent")};
+    ${({ $active: $active }) => ($active ? colors.primary : "transparent")};
   margin-bottom: -2px;
   cursor: pointer;
   transition: all 0.15s;

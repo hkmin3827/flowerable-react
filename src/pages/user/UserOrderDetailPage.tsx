@@ -85,6 +85,8 @@ const StatusBadge = styled.span<{ status: OrderStatus }>`
 
   ${({ status }) => {
     switch (status) {
+      case "CREATED":
+        return `background: #F3F4F6; color: #000;`;
       case "REQUESTED":
         return `background: ${colors.errorLight}; color: ${colors.error};`;
       case "ACCEPTED":
@@ -277,6 +279,7 @@ const UserOrderDetailPage: React.FC = () => {
 
   const getStatusText = (status: OrderStatus) => {
     const statusMap = {
+      CREATED: "결제 미완료",
       REQUESTED: "주문요청",
       ACCEPTED: "접수완료",
       READY: "준비완료",
@@ -382,6 +385,16 @@ const UserOrderDetailPage: React.FC = () => {
         <Card>
           <SectionTitle>요청사항</SectionTitle>
           <Message>{order.message}</Message>
+        </Card>
+      )}
+
+      {order.status === "CANCELED" && (
+        <Card>
+          <SectionTitle>취소자</SectionTitle>
+          <p style={{ marginBottom: "20px" }}>{order.cancelBy}</p>
+          <hr />
+          <SectionTitle>취소 사유</SectionTitle>
+          <p>{order.cancelReason}</p>
         </Card>
       )}
 

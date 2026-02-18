@@ -216,7 +216,7 @@ const FlowerOptionModal = ({
       });
     } catch (error) {
       console.error("꽃 등록 실패:", error);
-      alert("꽃 등록에 실패했습니다.");
+      alert(error.response?.data?.message || "꽃 등록에 실패하였습니다.");
       setIsRegistering(false);
     }
   };
@@ -264,7 +264,7 @@ const FlowerOptionModal = ({
                   <ColorOption
                     key={color.value}
                     type="button"
-                    $color={color.hex}
+                    $background={color.gradient ?? color.hex}
                     $selected={selectedColors.includes(color.value)}
                     onClick={() => toggleColor(color.value)}
                     title={color.label}
@@ -613,9 +613,9 @@ const ColorPalette = styled.div`
   margin-bottom: 0.5rem;
 `;
 
-const ColorOption = styled.button<{ $color: string; $selected: boolean }>`
+const ColorOption = styled.button<{ $background: string; $selected: boolean }>`
   aspect-ratio: 1;
-  background-color: ${(props) => props.$color};
+  background: ${(props) => props.$background};
   border: 3px solid ${(props) => (props.$selected ? "#111827" : "#e5e7eb")};
   border-radius: 0.5rem;
   cursor: pointer;

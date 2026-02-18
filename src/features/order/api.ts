@@ -25,7 +25,7 @@ export const userOrderAPI = {
 
   getWrappingOptions: (shopId: number) =>
     axiosInstance.get<WrappingOption>(
-      `/orders/users/wrapping-options/${shopId}`,
+      `/orders/users/${shopId}/wrapping-options`,
     ),
 };
 

@@ -1,7 +1,7 @@
 import { axiosInstance } from "@/shared/api/axios";
 
 export interface PresignedUploadRes {
-  presignedUrl: string;
+  uploadUrl: string;
   fileUrl: string;
 }
 
@@ -23,10 +23,10 @@ export const uploadImageToS3 = async (
   try {
     // 1. Presigned URL 받기
     const response = await s3API.getUploadUrl(folder, file.name, file.type);
-    const { presignedUrl, fileUrl } = response.data;
+    const { uploadUrl, fileUrl } = response.data;
 
     // 2. S3에 직접 업로드
-    await fetch(presignedUrl, {
+    await fetch(uploadUrl, {
       method: "PUT",
       headers: {
         "Content-Type": file.type,

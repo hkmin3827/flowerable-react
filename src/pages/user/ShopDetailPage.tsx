@@ -3,12 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { shopApi } from "@/features/shop/api";
 import { MapPin, Phone, MessageCircle, ShoppingCart } from "lucide-react";
-import { ShopDetailResponse } from "@/features/shop/types";
+import { ShopDetailResponse, ShopImageResponse } from "@/features/shop/types";
 import { chatAPI } from "@/features/chat/api";
 import { useAuthStore } from "@/features/auth/store";
 import { colors, LoadingContainer } from "@/shared/ui/CommonStyles";
 import { ChatRoomEnterReq } from "@/features/chat/types";
 import ChatRoomModal from "@/features/chat/components/ChatRoomModal";
+import DefaultShopThumbnail from "@/images/DefaultShopImageThumbnail.png";
 
 const Container = styled.div`
   max-width: 80rem;
@@ -162,6 +163,51 @@ const EmptyState = styled.div`
   padding: 3rem 1rem;
   color: ${colors.textSecondary};
 `;
+const ThumbnailWrapper = styled.div`
+  margin-top: 30px;
+`;
+
+const ThumbnailImage = styled.img`
+  width: 200px;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 0.75rem;
+`;
+
+const ImageSection = styled.div``;
+
+const ImageHeader = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
+
+const ImageGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+`;
+
+const ImageCard = styled.div`
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 0.5rem;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const MoreButton = styled.button`
+  background: none;
+  border: none;
+  color: ${colors.primary};
+  cursor: pointer;
+  font-weight: 600;
+`;
 
 const ShopDetailPage: React.FC = () => {
   const { shopId } = useParams<{ shopId: string }>();
@@ -171,6 +217,12 @@ const ShopDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [chatRoom, setChatRoom] = useState<ChatRoomEnterReq | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [thumbnail, setThumbnail] = useState<ShopImageResponse | null>(null);
+  const [latestImages, setLatestImages] = useState<ShopImageResponse[]>([]);
+  const representativeImage =
+    thumbnail?.imageUrl && thumbnail.imageUrl.trim() !== ""
+      ? thumbnail.imageUrl
+      : DefaultShopThumbnail;
 
   useEffect(() => {
     if (shopId) {
@@ -182,13 +234,18 @@ const ShopDetailPage: React.FC = () => {
     try {
       const response = await shopApi.getShopDetail(Number(shopId));
       setShop(response);
+
+      const thumb = await shopApi.getThumbnail(Number(shopId));
+      setThumbnail(thumb);
+
+      const images = await shopApi.getLatestImages(Number(shopId));
+      setLatestImages(images);
     } catch (error) {
       console.error("Failed to fetch shop detail:", error);
     } finally {
       setLoading(false);
     }
   };
-
   const handleOrder = () => {
     if (!isAuthenticated) {
       alert("로그인이 필요합니다.");
@@ -247,6 +304,43 @@ const ShopDetailPage: React.FC = () => {
     <>
       <Container>
         <ShopCard>
+          {/* 최신 이미지 */}
+          <ImageSection>
+            <ImageHeader>
+              <MoreButton onClick={() => navigate(`/shop-images/${shopId}`)}>
+                사진 더보기 →
+              </MoreButton>
+            </ImageHeader>
+
+            <ImageGrid>
+              {latestImages.length > 0 ? (
+                latestImages.map((img) => (
+                  <ImageCard key={img.id}>
+                    <img
+                      src={img.imageUrl}
+                      alt="샵 이미지"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          DefaultShopThumbnail;
+                      }}
+                    />
+                  </ImageCard>
+                ))
+              ) : (
+                <EmptyState>등록된 이미지가 없습니다</EmptyState>
+              )}
+            </ImageGrid>
+            <ThumbnailWrapper>
+              <ThumbnailImage
+                src={representativeImage}
+                alt="샵 대표 이미지"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = DefaultShopThumbnail;
+                }}
+              />
+            </ThumbnailWrapper>
+          </ImageSection>
+
           <ShopName>{shop.shopName}</ShopName>
 
           {shop.description && <Description>{shop.description}</Description>}

@@ -46,6 +46,8 @@ export interface OrderDetail {
   createdAt: string;
   canceledAt: string | null;
   items: OrderItem[];
+  cancelBy: "USER" | "SHOP" | null;
+  cancelReason: string | null;
 }
 
 export interface OrderCreateReq {

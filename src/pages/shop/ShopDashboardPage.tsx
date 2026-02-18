@@ -112,13 +112,11 @@ const ShopDashboardPage: React.FC = () => {
         <ActionCard onClick={() => navigate("/shop/orders")}>
           주문 관리
         </ActionCard>
-
+        <ActionCard onClick={() => navigate("/shop/manage")}>
+          가게 관리
+        </ActionCard>
         <ActionCard onClick={() => navigate("/shop/flowers/manage")}>
           꽃 관리
-        </ActionCard>
-
-        <ActionCard onClick={() => navigate("/shop/settings")}>
-          가게 설정
         </ActionCard>
       </ActionGrid>
     </Container>

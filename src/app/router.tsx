@@ -23,6 +23,10 @@ import { CartPage } from "@/pages/user/CartPage";
 import UserOrderDetailPage from "@/pages/user/UserOrderDetailPage";
 import UserOrderListPage from "@/pages/user/UserOrderListPage";
 import { UserProfilePage } from "@/pages/user/UserProfilePage";
+import CheckoutPage from "@/pages/user/CheckoutPage";
+import CartCheckoutPage from "@/pages/user/CartCheckoutPage";
+import PaymentSuccessPage from "@/pages/user/PaymentSuccessPage";
+import PaymentFailPage from "@/pages/user/PaymentFailPage";
 
 // Pages - Shop
 import { ShopManagePage } from "@/pages/shop/ShopManagePage";
@@ -44,6 +48,8 @@ import AdminShopManagePage from "@/pages/admin/AdminShopManagePage";
 import AdminOrderMonitorPage from "@/pages/admin/AdminOrderMonitorPage";
 import AdminFlowerManagePage from "@/pages/admin/AdminFlowerManagePage";
 import ChatListPage from "@/pages/common/ChatListPage";
+import { ShopImagesPage } from "@/pages/shop/ShopImagesPage";
+import { ShopImagesViewPage } from "@/pages/user/ShopImagesViewPage";
 
 // Protected Route Component
 const ProtectedRoute = ({
@@ -108,6 +114,10 @@ export const router = createBrowserRouter([
         path: "/chats",
         element: <ChatListPage />,
       },
+      {
+        path: "/shop-images/:shopId",
+        element: <ShopImagesViewPage />,
+      },
       // User routes
       {
         path: "/order/:shopId",
@@ -122,6 +132,38 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={["ROLE_USER"]}>
             <CartPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/checkout/shop/:shopId",
+        element: (
+          <ProtectedRoute allowedRoles={["ROLE_USER"]}>
+            <CheckoutPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/checkout/cart/:cartItemId",
+        element: (
+          <ProtectedRoute allowedRoles={["ROLE_USER"]}>
+            <CartCheckoutPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/payment/success",
+        element: (
+          <ProtectedRoute allowedRoles={["ROLE_USER"]}>
+            <PaymentSuccessPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/payment/fail",
+        element: (
+          <ProtectedRoute allowedRoles={["ROLE_USER"]}>
+            <PaymentFailPage />
           </ProtectedRoute>
         ),
       },
@@ -175,6 +217,10 @@ export const router = createBrowserRouter([
           {
             path: "flowers/manage",
             element: <ShopFlowerManagePage />,
+          },
+          {
+            path: "images",
+            element: <ShopImagesPage />,
           },
         ],
       },

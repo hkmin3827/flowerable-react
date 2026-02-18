@@ -14,10 +14,8 @@ export const CartPage = () => {
 
   const handleRemoveItem = async (cartItemId: number) => {
     if (!confirm("이 항목을 삭제하시겠습니까?")) return;
-
     try {
       await removeItemMutation.mutateAsync(cartItemId);
-      alert("장바구니 항목이 삭제되었습니다.");
     } catch (error: any) {
       alert(error.response?.data?.message || "삭제에 실패했습니다.");
     }
@@ -25,17 +23,15 @@ export const CartPage = () => {
 
   const handleClearCart = async () => {
     if (!confirm("장바구니를 전체 비우시겠습니까?")) return;
-
     try {
       await clearCartMutation.mutateAsync();
-      alert("장바구니가 비워졌습니다.");
     } catch (error: any) {
       alert(error.response?.data?.message || "실패했습니다.");
     }
   };
 
-  const handleCheckout = () => {
-    alert("결제 기능은 준비 중입니다.");
+  const handleOrderCartItem = (cartItemId: number) => {
+    navigate(`/checkout/cart/${cartItemId}`);
   };
 
   if (isLoading) {
@@ -46,7 +42,7 @@ export const CartPage = () => {
     );
   }
 
-  if (!cart || !cart.items) {
+  if (!cart || !cart.items || cart.items.length === 0) {
     return (
       <Container>
         <EmptyCart>
@@ -87,7 +83,12 @@ export const CartPage = () => {
             <FlowerList>
               {item.flowers.map((flower: any) => (
                 <FlowerItem key={flower.detailId}>
-                  <FlowerImage src={flower.imageUrl} alt={flower.flowerName} />
+                  {flower.imageUrl && (
+                    <FlowerImage
+                      src={flower.imageUrl}
+                      alt={flower.flowerName}
+                    />
+                  )}
                   <FlowerInfo>
                     <FlowerName>{flower.flowerName}</FlowerName>
                     <FlowerDetail>색상: {flower.flowerColor}</FlowerDetail>
@@ -114,10 +115,19 @@ export const CartPage = () => {
               </MessageInfo>
             )}
 
-            <ItemTotal>
-              <TotalLabel>소계</TotalLabel>
-              <TotalPrice>{item.totalPrice.toLocaleString()}원</TotalPrice>
-            </ItemTotal>
+            <ItemFooter>
+              <ItemTotalBox>
+                <TotalLabel>소계</TotalLabel>
+                <TotalPrice>
+                  {item.totalFlowerPrice.toLocaleString()}원
+                </TotalPrice>
+              </ItemTotalBox>
+              <OrderItemButton
+                onClick={() => handleOrderCartItem(item.cartItemId)}
+              >
+                주문하기 →
+              </OrderItemButton>
+            </ItemFooter>
           </CartItemCard>
         ))}
       </CartContent>
@@ -129,12 +139,12 @@ export const CartPage = () => {
         </SummaryRow>
         <Divider />
         <GrandTotal>
-          <GrandTotalLabel>전체 금액</GrandTotalLabel>
+          <GrandTotalLabel>전체 꽃 금액</GrandTotalLabel>
           <GrandTotalPrice>
             {cart.totalPrice.toLocaleString()}원
           </GrandTotalPrice>
         </GrandTotal>
-        <CheckoutButton onClick={handleCheckout}>주문하기</CheckoutButton>
+        <SummaryNote>각 항목의 "주문하기" 버튼을 눌러 결제하세요.</SummaryNote>
       </Summary>
     </Container>
   );
@@ -145,277 +155,247 @@ const Container = styled.div`
   margin: 0 auto;
   padding: 2rem 1rem;
 `;
-
 const CartHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
 `;
-
 const Title = styled.h1`
   font-size: 1.5rem;
   font-weight: 700;
   color: #111827;
 `;
-
 const ClearButton = styled.button`
   padding: 0.5rem 1rem;
-  background-color: #ef4444;
-  color: white;
-  border: none;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
   border-radius: 0.375rem;
   font-weight: 500;
   cursor: pointer;
-
   &:hover {
-    background-color: #dc2626;
+    background: #dc2626;
+    color: white;
   }
 `;
-
 const CartContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   margin-bottom: 2rem;
 `;
-
 const CartItemCard = styled.div`
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 `;
-
 const ShopHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 2px solid #fce7f3;
 `;
-
 const ShopName = styled.h2`
   font-size: 1.125rem;
   font-weight: 600;
   color: #111827;
 `;
-
 const RemoveShopButton = styled.button`
   padding: 0.25rem 0.75rem;
-  background-color: #f3f4f6;
-  color: #6b7280;
-  border: none;
-  border-radius: 0.25rem;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  border-radius: 0.375rem;
   font-size: 0.875rem;
   cursor: pointer;
-
   &:hover {
-    background-color: #e5e7eb;
-    color: #111827;
+    background: #dc2626;
+    color: white;
   }
 `;
-
 const ShopInfo = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   margin-bottom: 1rem;
 `;
-
 const InfoText = styled.div`
   color: #6b7280;
   font-size: 0.875rem;
 `;
-
 const FlowerList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 `;
-
 const FlowerItem = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 0.75rem;
-  background-color: #f9fafb;
-  border-radius: 0.375rem;
+  background: #fdf2f8;
+  border-radius: 0.5rem;
 `;
-
 const FlowerImage = styled.img`
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   object-fit: cover;
   border-radius: 0.375rem;
+  flex-shrink: 0;
 `;
-
 const FlowerInfo = styled.div`
   flex: 1;
 `;
-
 const FlowerName = styled.div`
   font-weight: 600;
   color: #111827;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.125rem;
 `;
-
 const FlowerDetail = styled.div`
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #6b7280;
 `;
-
 const FlowerPrice = styled.div`
   font-weight: 600;
-  color: #3b82f6;
+  color: #ec4899;
 `;
-
 const WrappingInfo = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: 0.75rem;
-  background-color: #eff6ff;
+  padding: 0.625rem 0.875rem;
+  background: #eff6ff;
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  color: #1d4ed8;
 `;
-
 const MessageInfo = styled.div`
-  padding: 0.75rem;
-  background-color: #fef3c7;
+  padding: 0.625rem 0.875rem;
+  background: #fefce8;
   border-radius: 0.375rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 `;
-
 const MessageLabel = styled.div`
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #92400e;
   margin-bottom: 0.25rem;
 `;
-
 const MessageText = styled.div`
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   color: #78350f;
 `;
-
-const ItemTotal = styled.div`
+const ItemFooter = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #f3f4f6;
 `;
-
+const ItemTotalBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
 const TotalLabel = styled.div`
-  font-weight: 600;
-  color: #111827;
+  font-weight: 500;
+  color: #374151;
 `;
-
 const TotalPrice = styled.div`
   font-size: 1.125rem;
   font-weight: 700;
-  color: #3b82f6;
+  color: #111827;
 `;
-
+const OrderItemButton = styled.button`
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.925rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  &:hover {
+    opacity: 0.9;
+  }
+`;
 const Summary = styled.div`
   background: white;
-  border: 2px solid #3b82f6;
-  border-radius: 0.5rem;
+  border: 2px solid #fce7f3;
+  border-radius: 0.75rem;
   padding: 1.5rem;
 `;
-
 const SummaryRow = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.5rem;
 `;
-
 const SummaryLabel = styled.div`
   color: #6b7280;
 `;
-
 const SummaryValue = styled.div`
   font-weight: 600;
   color: #111827;
 `;
-
 const Divider = styled.hr`
   border: none;
   border-top: 1px solid #e5e7eb;
   margin: 1rem 0;
 `;
-
 const GrandTotal = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 `;
-
 const GrandTotalLabel = styled.div`
   font-size: 1.125rem;
   font-weight: 600;
   color: #111827;
 `;
-
 const GrandTotalPrice = styled.div`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #3b82f6;
+  color: #ec4899;
 `;
-
-const CheckoutButton = styled.button`
-  width: 100%;
-  padding: 1rem;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #2563eb;
-  }
+const SummaryNote = styled.div`
+  font-size: 0.825rem;
+  color: #9ca3af;
+  text-align: center;
 `;
-
 const EmptyCart = styled.div`
   text-align: center;
   padding: 4rem 1rem;
 `;
-
 const EmptyIcon = styled.div`
   font-size: 4rem;
   margin-bottom: 1rem;
 `;
-
 const EmptyText = styled.div`
   font-size: 1.25rem;
   color: #6b7280;
   margin-bottom: 2rem;
 `;
-
 const GoShoppingButton = styled.button`
   padding: 0.75rem 2rem;
-  background-color: #3b82f6;
+  background: linear-gradient(135deg, #ec4899, #db2777);
   color: white;
   border: none;
   border-radius: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-
   &:hover {
-    background-color: #2563eb;
+    opacity: 0.9;
   }
 `;
-
 const LoadingText = styled.div`
   text-align: center;
   padding: 3rem;

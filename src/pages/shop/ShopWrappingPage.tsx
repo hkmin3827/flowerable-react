@@ -103,7 +103,7 @@ export const ShopWrappingPage = () => {
             {COLOR_PALETTE.map((color) => (
               <ColorWrapper key={color.value}>
                 <ColorOption
-                  $color={color.hex}
+                  $background={color.gradient ?? color.hex}
                   $selected={selectedColors.includes(color.label)}
                   onClick={() => toggleColor(color.label)}
                   title={color.label}
@@ -234,10 +234,10 @@ const ColorWrapper = styled.div`
   gap: 0.5rem;
 `;
 
-const ColorOption = styled.button<{ $color: string; $selected: boolean }>`
+const ColorOption = styled.button<{ $background?: string; $selected: boolean }>`
   width: 100%;
   aspect-ratio: 1;
-  background-color: ${(props) => props.$color};
+  background: ${(props) => props.$background};
   border: 4px solid ${(props) => (props.$selected ? "#111827" : "#e5e7eb")};
   border-radius: 0.75rem;
   cursor: pointer;

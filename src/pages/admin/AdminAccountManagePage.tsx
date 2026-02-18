@@ -37,7 +37,7 @@ import {
 import { Search, User, Store, X } from "lucide-react";
 
 type MainTabType = "ALL" | "USER" | "SHOP";
-type StatusTabType = "ALL" | "TEMP" | "ACTIVE" | "SUSPENDED" | "DELETED";
+type StatusTabType = "ALL" | "ACTIVE" | "SUSPENDED" | "DELETED";
 
 const ActionButtons = styled.div`
   display: flex;
@@ -59,13 +59,6 @@ const CloseButton = styled.button`
 
 const DetailSection = styled.div`
   margin-bottom: 1.5rem;
-`;
-
-const DetailTitle = styled.h4`
-  font-size: 1rem;
-  font-weight: 600;
-  color: ${colors.text};
-  margin-bottom: 0.75rem;
 `;
 
 const DetailRow = styled.div`
@@ -133,7 +126,6 @@ const AdminAccountManagePage: React.FC = () => {
         setUsers([]);
         setTotalPages(response.data.totalPages);
       } else {
-        // ALL - 사용자와 샵 모두 가져오기
         const [userResponse, shopResponse] = await Promise.all([
           adminUserAPI.getUsers(accountStatus, page, 10),
           adminShopAPI.getShops(undefined, accountStatus, page, 10),
@@ -274,7 +266,7 @@ const AdminAccountManagePage: React.FC = () => {
 
       <TabList>
         <Tab
-          active={mainTab === "ALL"}
+          $active={mainTab === "ALL"}
           onClick={() => {
             setMainTab("ALL");
             setPage(0);
@@ -283,7 +275,7 @@ const AdminAccountManagePage: React.FC = () => {
           전체
         </Tab>
         <Tab
-          active={mainTab === "USER"}
+          $active={mainTab === "USER"}
           onClick={() => {
             setMainTab("USER");
             setPage(0);
@@ -292,7 +284,7 @@ const AdminAccountManagePage: React.FC = () => {
           사용자
         </Tab>
         <Tab
-          active={mainTab === "SHOP"}
+          $active={mainTab === "SHOP"}
           onClick={() => {
             setMainTab("SHOP");
             setPage(0);
@@ -304,7 +296,7 @@ const AdminAccountManagePage: React.FC = () => {
 
       <SubTabList>
         <Tab
-          active={statusTab === "ALL"}
+          $active={statusTab === "ALL"}
           onClick={() => {
             setStatusTab("ALL");
             setPage(0);
@@ -313,16 +305,7 @@ const AdminAccountManagePage: React.FC = () => {
           전체
         </Tab>
         <Tab
-          active={statusTab === "TEMP"}
-          onClick={() => {
-            setStatusTab("TEMP");
-            setPage(0);
-          }}
-        >
-          임시
-        </Tab>
-        <Tab
-          active={statusTab === "ACTIVE"}
+          $active={statusTab === "ACTIVE"}
           onClick={() => {
             setStatusTab("ACTIVE");
             setPage(0);
@@ -331,7 +314,7 @@ const AdminAccountManagePage: React.FC = () => {
           활성
         </Tab>
         <Tab
-          active={statusTab === "SUSPENDED"}
+          $active={statusTab === "SUSPENDED"}
           onClick={() => {
             setStatusTab("SUSPENDED");
             setPage(0);
@@ -340,7 +323,7 @@ const AdminAccountManagePage: React.FC = () => {
           정지
         </Tab>
         <Tab
-          active={statusTab === "DELETED"}
+          $active={statusTab === "DELETED"}
           onClick={() => {
             setStatusTab("DELETED");
             setPage(0);
@@ -376,6 +359,7 @@ const AdminAccountManagePage: React.FC = () => {
                     <TableHeader>ID</TableHeader>
                     <TableHeader>이름</TableHeader>
                     <TableHeader>이메일</TableHeader>
+                    <TableHeader>전화번호</TableHeader>
                     <TableHeader>계정 상태</TableHeader>
                     <TableHeader>가입일</TableHeader>
                     <TableHeader>작업</TableHeader>
@@ -391,6 +375,7 @@ const AdminAccountManagePage: React.FC = () => {
                       <TableCell>{user.id}</TableCell>
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.accountEmail}</TableCell>
+                      <TableCell>{user.accountTelnum}</TableCell>
                       <TableCell>
                         <Badge
                           variant={getStatusBadgeVariant(user.accountStatus)}
@@ -575,14 +560,14 @@ const AdminAccountManagePage: React.FC = () => {
                   <DetailValue>{selectedUserDetail.telnum}</DetailValue>
                 </DetailRow>
                 <DetailRow>
-                  <DetailLabel>가입일</DetailLabel>
+                  <DetailLabel>가입일시</DetailLabel>
                   <DetailValue>
                     {new Date(selectedUserDetail.createdAt).toLocaleString()}
                   </DetailValue>
                 </DetailRow>
                 {selectedUserDetail.deletedAt && (
                   <DetailRow>
-                    <DetailLabel>삭제일</DetailLabel>
+                    <DetailLabel>탈퇴일시</DetailLabel>
                     <DetailValue>
                       {new Date(selectedUserDetail.deletedAt).toLocaleString()}
                     </DetailValue>
@@ -632,9 +617,16 @@ const AdminAccountManagePage: React.FC = () => {
                   <DetailValue>{selectedShopDetail.status}</DetailValue>
                 </DetailRow>
                 <DetailRow>
-                  <DetailLabel>등록일</DetailLabel>
+                  <DetailLabel>등록일시</DetailLabel>
                   <DetailValue>
                     {new Date(selectedShopDetail.registerAt).toLocaleString()}
+                  </DetailValue>
+                </DetailRow>
+                <DetailRow>
+                  <DetailLabel>탈퇴일시</DetailLabel>
+
+                  <DetailValue>
+                    {new Date(selectedShopDetail.deletedAt).toLocaleString()}
                   </DetailValue>
                 </DetailRow>
               </DetailSection>

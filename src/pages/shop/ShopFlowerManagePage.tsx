@@ -60,12 +60,12 @@ export const ShopFlowerManagePage = () => {
       await fetchShopFlowers();
     } catch (error) {
       console.error("판매 상태 변경 실패:", error);
-      alert("판매 상태 변경에 실패했습니다.");
+      alert(error.response?.data?.message || "판매 상태 변경에 실패했습니다.");
     }
   };
 
   const getColorHex = (color: Color): string => {
-    return COLOR_PALETTE.find((c) => c.value === color)?.hex || "#6b7280";
+    return COLOR_PALETTE.find((c) => c.value === color)?.hex || "#49b7a8";
   };
 
   const getColorLabel = (color: Color): string => {
@@ -272,7 +272,7 @@ const EditFlowerModal = ({ flower, onClose, onSave }: EditFlowerModalProps) => {
                 <ColorOption
                   key={color.value}
                   type="button"
-                  $color={color.hex}
+                  $background={color.gradient ?? color.hex}
                   $selected={selectedColors.includes(color.value)}
                   onClick={() => toggleColor(color.value)}
                   title={color.label}
@@ -656,9 +656,9 @@ const ColorPalette = styled.div`
   gap: 0.75rem;
 `;
 
-const ColorOption = styled.button<{ $color: string; $selected: boolean }>`
+const ColorOption = styled.button<{ $background?: string; $selected: boolean }>`
   aspect-ratio: 1;
-  background-color: ${(props) => props.$color};
+  background-color: ${(props) => props.$background};
   border: 3px solid ${(props) => (props.$selected ? "#111827" : "#e5e7eb")};
   border-radius: 0.5rem;
   cursor: pointer;

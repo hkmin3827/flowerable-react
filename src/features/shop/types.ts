@@ -1,4 +1,4 @@
-import { ShopStatus, Region, Color } from "@/shared/types";
+import { ShopStatus, Color } from "@/shared/types";
 
 // API Response Types
 export interface ShopDetailResponse {

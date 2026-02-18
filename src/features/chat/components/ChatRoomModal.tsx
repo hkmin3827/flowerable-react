@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { chatAPI } from "../api";
-import { ChatMessage, ChatRoomEnterReq } from "../types";
+import { ChatMessage, ChatRoomListRes } from "../types";
 import { colors } from "@/shared/ui/CommonStyles";
 import { X, Send } from "lucide-react";
 import { format } from "date-fns";
@@ -10,7 +10,7 @@ import { Client } from "@stomp/stompjs";
 import { useAuthStore } from "@/features/auth/store";
 
 interface ChatRoomModalProps {
-  chatRoom: ChatRoomEnterReq;
+  chatRoom: ChatRoomListRes;
   userType: string;
   onClose: () => void;
 }
@@ -221,21 +221,6 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const fetchMessages = async () => {
-    try {
-      const response = await chatAPI.getChatMessages(chatRoom.id);
-      setMessages(response.data);
-    } catch (error) {
-      console.error("Failed to fetch messages:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -263,9 +248,7 @@ const ChatRoomModal: React.FC<ChatRoomModalProps> = ({
     <ModalOverlay onClick={onClose}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
-          <ModalTitle>
-            {userType === "ROLE_USER" ? chatRoom.shopName : chatRoom.userName}
-          </ModalTitle>
+          <ModalTitle>{chatRoom.opponentName} 님과의 채팅</ModalTitle>
           <CloseButton onClick={onClose}>
             <X size={24} />
           </CloseButton>

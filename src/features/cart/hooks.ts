@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cartApi } from "./api";
-import type { AddToCartRequest, UpdateCartItemRequest } from "./types";
+import type { AddToCartRequest } from "./types";
 import { useAuthStore } from "../auth/store";
 
 // 장바구니 조회

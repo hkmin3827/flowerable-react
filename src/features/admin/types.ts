@@ -51,6 +51,7 @@ export interface AdminOrder {
 export interface UserDetail {
   id: number;
   email: string;
+  telnum: string;
   name: string;
   accountTellnum: string;
   active: boolean;
@@ -65,11 +66,14 @@ export interface ShopDetail {
   id: number;
   shopName: string;
   description?: string;
+  regionDesc: string;
+  districtDesc: string;
   address: string;
   telnum: string;
   status: string;
   email: string;
   registerAt: string;
+  deletedAt: string;
 }
 
 // 꽃 생성 요청

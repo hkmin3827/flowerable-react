@@ -4,6 +4,7 @@ export type Provider = "LOCAL" | "KAKAO" | "NAVER" | "GOOGLE";
 export type AccountStatus = "ACTIVE" | "SUSPENDED" | "DELETED" | "TEMP";
 
 export type OrderStatus =
+  | "CREATED"
   | "REQUESTED"
   | "ACCEPTED"
   | "READY"
@@ -20,6 +21,10 @@ export type Color =
   | "BLUE"
   | "ORANGE"
   | "GREEN"
+  | "BEIGE"
+  | "BROWN"
+  | "BLACK"
+  | "GRAY"
   | "MIXED";
 export type Season = "SPRING" | "SUMMER" | "AUTUMN" | "WINTER";
 export type Region =

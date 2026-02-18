@@ -191,6 +191,7 @@ const UserOrderListPage: React.FC = () => {
 
   const getStatusText = (status: OrderStatus) => {
     const statusMap = {
+      CREATED: "결제 미완료",
       REQUESTED: "주문요청",
       ACCEPTED: "접수완료",
       READY: "준비완료",

@@ -30,16 +30,17 @@ const NavList = styled.nav`
   flex-direction: column;
 `;
 
-const NavItem = styled.button<{ active: boolean }>`
+const NavItem = styled.button<{ $active: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1.5rem;
   border: none;
-  background: ${({ active }) => (active ? colors.primaryLight : "transparent")};
-  color: ${({ active }) => (active ? colors.primary : colors.text)};
+  background: ${({ $active }) =>
+    $active ? colors.primaryLight : "transparent"};
+  color: ${({ $active }) => ($active ? colors.primary : colors.text)};
   font-size: 1rem;
-  font-weight: ${({ active }) => (active ? "600" : "500")};
+  font-weight: ${({ $active }) => ($active ? "600" : "500")};
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
@@ -82,7 +83,7 @@ const AdminLayout: React.FC = () => {
             return (
               <NavItem
                 key={item.path}
-                active={isActive}
+                $active={isActive}
                 onClick={() => navigate(item.path)}
               >
                 <Icon size={20} />
