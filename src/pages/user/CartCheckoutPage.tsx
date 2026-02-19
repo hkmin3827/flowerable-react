@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { axiosInstance } from "@/shared/api/axios";
@@ -7,9 +7,7 @@ import { cartApi } from "@/features/cart/api";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/features/payment/types";
 import type { CartItemInfo } from "@/features/cart/types";
 
-const TOSS_CLIENT_KEY =
-  import.meta.env.VITE_TOSS_CLIENT_KEY ||
-  "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
+const TOSS_CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY;
 
 const CartCheckoutPage = () => {
   const { cartItemId } = useParams<{ cartItemId: string }>();
@@ -25,10 +23,19 @@ const CartCheckoutPage = () => {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("CARD");
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const generatingRef = useRef(false);
 
   useEffect(() => {
     loadCartItem();
   }, [cartItemId]);
+
+  useEffect(() => {
+    setPreviewImageUrl(null);
+    setPreviewError(null);
+  }, [selectedWrapping]);
 
   const loadCartItem = async () => {
     try {
@@ -52,6 +59,44 @@ const CartCheckoutPage = () => {
       // ignore
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGeneratePreview = async () => {
+    console.log("🔥 preview click");
+    if (generatingRef.current) return;
+    generatingRef.current = true;
+
+    setPreviewLoading(true);
+    setPreviewError(null);
+    setPreviewImageUrl(null);
+
+    try {
+      const res = await axiosInstance.post(
+        `/orders/users/${cartItem!.shopId}/bouquet-preview`,
+        {
+          orderItems: cartItem?.flowers.map((f) => ({
+            flowerName: f.flowerName,
+            flowerColor: f.flowerColor,
+            quantity: f.quantity,
+          })),
+          wrappingColorName: selectedWrapping,
+        },
+        { timeout: 30000 },
+      );
+      setPreviewImageUrl(res.data.imageUrl);
+    } catch (error: any) {
+      console.error("미리보기 에러:", error);
+      console.error("status:", error?.response?.status);
+      console.error("data:", error?.response?.data);
+
+      setPreviewError(
+        error?.response?.data?.message ||
+          "미리보기 생성에 실패했습니다. 다시 시도해주세요.",
+      );
+    } finally {
+      setPreviewLoading(false);
+      generatingRef.current = false;
     }
   };
 
@@ -232,7 +277,49 @@ const CartCheckoutPage = () => {
           <TotalValue>{totalPrice.toLocaleString()}원</TotalValue>
         </PriceRow>
       </PriceSummary>
+      {/* 부케 미리보기 — 포장 옵션 선택 시에만 노출 */}
+      {selectedWrapping && (
+        <PreviewSection>
+          <PreviewHeader>
+            <PreviewTitle>🌷 부케 미리보기</PreviewTitle>
+            <PreviewSubtitle>
+              AI가 예상 부케 이미지를 생성해드려요
+            </PreviewSubtitle>
+          </PreviewHeader>
 
+          {previewImageUrl ? (
+            <PreviewImageWrap>
+              <PreviewImage src={previewImageUrl} alt="AI 예상 부케 이미지" />
+              <RegenerateBtn
+                onClick={handleGeneratePreview}
+                disabled={previewLoading}
+              >
+                🔄 다시 생성
+              </RegenerateBtn>
+            </PreviewImageWrap>
+          ) : (
+            <PreviewPlaceholder>
+              {previewLoading ? (
+                <LoadingWrap>
+                  <Spinner />
+                  <LoadingText>AI가 부케를 그리고 있어요...</LoadingText>
+                </LoadingWrap>
+              ) : (
+                <>
+                  <PlaceholderEmoji>🎨</PlaceholderEmoji>
+                  <PlaceholderText>
+                    선택한 꽃과 포장지로 예상 부케를 미리 확인해보세요
+                  </PlaceholderText>
+                  {previewError && <ErrorText>{previewError}</ErrorText>}
+                  <PreviewBtn onClick={handleGeneratePreview}>
+                    미리보기 생성하기
+                  </PreviewBtn>
+                </>
+              )}
+            </PreviewPlaceholder>
+          )}
+        </PreviewSection>
+      )}
       <PayButton onClick={handlePayment} disabled={submitting}>
         {submitting
           ? "처리 중..."
@@ -325,10 +412,10 @@ const WrappingNone = styled.div<{ $selected: boolean }>`
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  border: 2px solid ${(p) => (p.$selected ? "#ec4899" : "#e5e7eb")};
+  border: 2px solid ${(p) => (p.$selected ? "#3b63f2" : "#e5e7eb")};
   border-radius: 0.5rem;
   cursor: pointer;
-  background: ${(p) => (p.$selected ? "#fdf2f8" : "white")};
+  background: ${(p) => (p.$selected ? "#f3f5ff" : "white")};
   transition: all 0.2s;
   margin-bottom: 0.5rem;
 `;
@@ -337,14 +424,14 @@ const WrappingItem = styled.div<{ $selected: boolean }>`
   flex-direction: column;
   align-items: center;
   padding: 0.875rem;
-  border: 2px solid ${(p) => (p.$selected ? "#ec4899" : "#e5e7eb")};
+  border: 2px solid ${(p) => (p.$selected ? "#3b63f2" : "#e5e7eb")};
   border-radius: 0.5rem;
   cursor: pointer;
-  background: ${(p) => (p.$selected ? "#fdf2f8" : "white")};
+  background: ${(p) => (p.$selected ? "#f3f5ff" : "white")};
   transition: all 0.2s;
   text-align: center;
   &:hover {
-    border-color: #ec4899;
+    border-color: #3b63f2;
   }
 `;
 const WrappingLabel = styled.div`
@@ -368,8 +455,8 @@ const Textarea = styled.textarea`
   box-sizing: border-box;
   &:focus {
     outline: none;
-    border-color: #ec4899;
-    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+    border-color: #3b63f2;
+    box-shadow: 0 0 0 3px rgba(35, 39, 255, 0.1);
   }
 `;
 const CharCount = styled.div`
@@ -388,21 +475,21 @@ const PaymentMethodItem = styled.div<{ $selected: boolean }>`
   align-items: center;
   gap: 1rem;
   padding: 0.875rem 1rem;
-  border: 2px solid ${(p) => (p.$selected ? "#ec4899" : "#e5e7eb")};
+  border: 2px solid ${(p) => (p.$selected ? "#3b63f2" : "#e5e7eb")};
   border-radius: 0.5rem;
   cursor: pointer;
-  background: ${(p) => (p.$selected ? "#fdf2f8" : "white")};
+  background: ${(p) => (p.$selected ? "#f3f5ff" : "white")};
   transition: all 0.2s;
   &:hover {
-    border-color: #ec4899;
+    border-color: #3b63f2;
   }
 `;
 const MethodRadio = styled.div<{ $selected: boolean }>`
   width: 1.125rem;
   height: 1.125rem;
   border-radius: 50%;
-  border: 2px solid ${(p) => (p.$selected ? "#ec4899" : "#d1d5db")};
-  background: ${(p) => (p.$selected ? "#ec4899" : "white")};
+  border: 2px solid ${(p) => (p.$selected ? "#f7ca23" : "#d1d5db")};
+  background: ${(p) => (p.$selected ? "#fffde5" : "white")};
   flex-shrink: 0;
   transition: all 0.2s;
 `;
@@ -459,12 +546,11 @@ const TotalLabel = styled.span`
 const TotalValue = styled.span`
   font-size: 1.25rem;
   font-weight: 700;
-  color: #ec4899;
 `;
 const PayButton = styled.button`
   width: 100%;
   padding: 1.125rem;
-  background: linear-gradient(135deg, #ec4899, #db2777);
+  background: linear-gradient(135deg, #3b63f2, #294ccc);
   color: white;
   border: none;
   border-radius: 0.75rem;
@@ -481,9 +567,119 @@ const PayButton = styled.button`
     cursor: not-allowed;
   }
 `;
-const LoadingText = styled.div`
-  text-align: center;
-  padding: 3rem;
-  font-size: 1.125rem;
+
+const PreviewSection = styled.div`
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  border: 1.5px dashed #3b63f2;
+`;
+const PreviewHeader = styled.div`
+  margin-bottom: 1rem;
+`;
+const PreviewTitle = styled.h2`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.25rem;
+`;
+const PreviewSubtitle = styled.p`
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 0;
+`;
+const PreviewPlaceholder = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0;
+`;
+const PlaceholderEmoji = styled.div`
+  font-size: 2.5rem;
+`;
+const PlaceholderText = styled.p`
+  font-size: 0.875rem;
   color: #6b7280;
+  text-align: center;
+  margin: 0;
+`;
+const ErrorText = styled.p`
+  font-size: 0.8rem;
+  color: #ef4444;
+  text-align: center;
+  margin: 0;
+`;
+const PreviewBtn = styled.button`
+  padding: 0.625rem 1.5rem;
+  background: linear-gradient(135deg, #f7ca23, #3b63f2);
+  color: white;
+  border: none;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+const PreviewImageWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+`;
+const PreviewImage = styled.img`
+  width: 100%;
+  max-width: 360px;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  box-shadow: 0 2px 12px rgba(236, 72, 153, 0.15);
+`;
+const RegenerateBtn = styled.button`
+  padding: 0.5rem 1.25rem;
+  background: transparent;
+  border: 1.5px solid #3b63f2;
+  border-radius: 2rem;
+  color: #3b63f2;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover:not(:disabled) {
+    background: #fdf2f8;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+const LoadingWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+`;
+const Spinner = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid #f3f5ff;
+  border-top-color: #3b63f2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+const LoadingText = styled.p`
+  font-size: 0.875rem;
+  color: #3b63f2;
+  font-weight: 500;
+  margin: 0;
 `;

@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { axiosInstance } from "@/shared/api/axios";
 import { useAuthStore } from "@/features/auth/store";
+import { AccountStatus } from "@/shared/types";
+import { authApi } from "@/features/auth/api";
+import { useNavigate } from "react-router-dom";
 
 interface UserDetail {
   id: number;
@@ -11,6 +14,7 @@ interface UserDetail {
   provider: string;
   createdAt: string;
   active: boolean;
+  accountStatus: AccountStatus;
 }
 
 export const UserProfilePage = () => {
@@ -19,6 +23,8 @@ export const UserProfilePage = () => {
   const [editForm, setEditForm] = useState({ name: "", telnum: "" });
   const [loading, setLoading] = useState(true);
   const updateUser = useAuthStore((s) => s.updateUser);
+  const { user, clearAuth } = useAuthStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserDetail();
@@ -43,7 +49,7 @@ export const UserProfilePage = () => {
     }
 
     try {
-      const { data } = await axiosInstance.patch("/users/me", editForm);
+      await axiosInstance.patch("/users/me", editForm);
 
       setUserDetail((prev) =>
         prev
@@ -79,6 +85,70 @@ export const UserProfilePage = () => {
         }
         alert("프로필 수정 실패 : " + error.response?.data?.message);
       }
+    }
+  };
+
+  const WITHDRAW_CONFIRM_TEXT = "영구탈퇴임을 확인했습니다";
+
+  const handleWithdraw = async () => {
+    const confirmed = window.confirm(
+      "계정을 탈퇴하면 다시 복구 불가능합니다. 계속하시겠습니까?",
+    );
+    if (!confirmed) return;
+
+    const input = window.prompt(
+      `계정을 탈퇴하려면 아래 문구를 정확히 입력하세요.\n\n"${WITHDRAW_CONFIRM_TEXT}"`,
+    );
+
+    if (input === null) return;
+    if (input !== WITHDRAW_CONFIRM_TEXT) {
+      alert("탈퇴 확인 문구가 일치하지 않습니다.");
+      return;
+    }
+
+    let password: string | undefined;
+
+    if (user?.provider === "LOCAL") {
+      const pw = window.prompt("비밀번호를 입력하세요.");
+      if (pw === null || pw.trim() === "") {
+        alert("비밀번호를 입력해야 합니다.");
+        return;
+      }
+      password = pw;
+    }
+
+    try {
+      const payload =
+        user?.provider === "LOCAL"
+          ? { confirmText: input, password: password! }
+          : { confirmText: input };
+
+      await authApi.withdraw(payload as any);
+
+      alert("탈퇴가 완료되었습니다.");
+      clearAuth(); // 토큰 제거 + 라우팅
+      navigate("/login");
+    } catch (error: any) {
+      const status = error.response.status;
+      const message = error?.response?.data?.message;
+
+      if (status === 400) {
+        // confirmText 틀림 / validation 등
+        alert(message ?? "요청이 올바르지 않습니다.");
+        return;
+      }
+
+      if (status === 401) {
+        alert(message ?? "비밀번호가 올바르지 않습니다.");
+        return;
+      }
+
+      if (status === 403) {
+        alert(message ?? "탈퇴 권한이 없습니다.");
+        return;
+      }
+
+      alert(message ?? "탈퇴 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -158,8 +228,16 @@ export const UserProfilePage = () => {
 
           <InfoRow>
             <Label>계정 상태</Label>
+            <AccountStatusBadge $status={userDetail.accountStatus}>
+              {userDetail.accountStatus === "ACTIVE" && "활성"}
+              {userDetail.accountStatus === "SUSPENDED" && "정지"}
+              {userDetail.accountStatus === "DELETED" && "탈퇴"}
+            </AccountStatusBadge>
+          </InfoRow>
+          <InfoRow>
+            <Label>활동 가능 여부</Label>
             <StatusBadge $active={userDetail.active}>
-              {userDetail.active ? "활성" : "비활성"}
+              {userDetail.active ? "활성" : "제한"}
             </StatusBadge>
           </InfoRow>
         </InfoSection>
@@ -180,6 +258,7 @@ export const UserProfilePage = () => {
             <SaveButton onClick={handleUpdateInfo}>저장</SaveButton>
           </ButtonGroup>
         )}
+        <WithdrawButton onClick={handleWithdraw}>탈퇴하기</WithdrawButton>
       </ProfileCard>
     </Container>
   );
@@ -279,6 +358,39 @@ const StatusBadge = styled.span<{ $active: boolean }>`
   color: ${({ $active }) => ($active ? "#065f46" : "#991b1b")};
 `;
 
+const AccountStatusBadge = styled.span<{ $status: AccountStatus }>`
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  background-color: ${({ $status }) => {
+    switch ($status) {
+      case "ACTIVE":
+        return "#d1fae5"; // 기존 활성 배경
+      case "SUSPENDED":
+        return "#fee2e2"; // 기존 제한 배경
+      case "DELETED":
+        return "#e5e7eb"; // 회색 배경
+      default:
+        return "#f3f4f6";
+    }
+  }};
+
+  color: ${({ $status }) => {
+    switch ($status) {
+      case "ACTIVE":
+        return "#065f46"; // 기존 활성 글자
+      case "SUSPENDED":
+        return "#991b1b"; // 기존 제한 글자
+      case "DELETED":
+        return "#4b5563"; // 회색 글자
+      default:
+        return "#374151";
+    }
+  }};
+`;
+
 const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
@@ -328,4 +440,19 @@ const ErrorText = styled.div`
   padding: 3rem;
   font-size: 1.125rem;
   color: #ef4444;
+`;
+const WithdrawButton = styled.button`
+  padding: 5px 0;
+  margin-top: 50px;
+  width: 100%;
+  border-radius: 999px;
+  cursor: pointer;
+  border: none;
+  background-color: #eeeeee;
+  color: #666;
+
+  &:hover {
+    color: #fff;
+    background-color: #e11111;
+  }
 `;

@@ -4,14 +4,16 @@ import styled from "styled-components";
 import { shopOrderAPI } from "@/features/order/api";
 import { OrderDetail } from "@/features/order/types";
 import { format } from "date-fns";
-import { ArrowLeft, Phone, User, X } from "lucide-react";
-import { OrderStatus } from "@/shared/types";
+import { ArrowLeft, Calendar, Mail, Phone, User, X } from "lucide-react";
+import { AccountStatus, OrderStatus } from "@/shared/types";
 import {
   colors,
   LoadingContainer,
   ModalOverlay,
   ModalContent,
 } from "@/shared/ui/CommonStyles";
+import { useQuery } from "@tanstack/react-query";
+import { userAPI } from "@/features/user/api";
 
 const Container = styled.div`
   max-width: 64rem;
@@ -297,6 +299,18 @@ const CloseButton = styled.button`
   }
 `;
 
+const ProfileButton = styled.button`
+  padding: 5px 5px;
+  border-radius: 999px;
+  border: none;
+  color: ${colors.textSecondary};
+  width: 80px;
+
+  &:hover {
+    color: ${colors.text};
+  }
+`;
+
 const ReasonGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -363,6 +377,47 @@ const ModalButton = styled.button<{ variant?: "primary" | "secondary" }>`
     cursor: not-allowed;
   }
 `;
+const UserStatusBadge = styled.span<{ $active: boolean }>`
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: ${({ $active }) => ($active ? "#d1fae5" : "#fee2e2")};
+  color: ${({ $active }) => ($active ? "#065f46" : "#991b1b")};
+`;
+
+const UserAccountStatusBadge = styled.span<{ $status: AccountStatus }>`
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  background-color: ${({ $status }) => {
+    switch ($status) {
+      case "ACTIVE":
+        return "#d1fae5"; // 기존 활성 배경
+      case "SUSPENDED":
+        return "#fee2e2"; // 기존 제한 배경
+      case "DELETED":
+        return "#e5e7eb"; // 회색 배경
+      default:
+        return "#f3f4f6";
+    }
+  }};
+
+  color: ${({ $status }) => {
+    switch ($status) {
+      case "ACTIVE":
+        return "#065f46"; // 기존 활성 글자
+      case "SUSPENDED":
+        return "#991b1b"; // 기존 제한 글자
+      case "DELETED":
+        return "#4b5563"; // 회색 글자
+      default:
+        return "#374151";
+    }
+  }};
+`;
 
 const CANCEL_REASONS = [
   { value: "OUT_OF_STOCK", label: "재고 부족" },
@@ -381,6 +436,15 @@ const ShopOrderDetailPage: React.FC = () => {
   const [processing, setProcessing] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
+  const [showUserModal, setShowUserModal] = useState(false);
+  const userId = order?.userId;
+
+  const { data: userProfile, isLoading: userLoading } = useQuery({
+    queryKey: ["userProfile", userId],
+    queryFn: () => userAPI.getUserProfile(userId!).then((res) => res.data),
+    enabled: showUserModal && !!userId,
+    staleTime: 1000 * 60 * 5,
+  });
 
   useEffect(() => {
     if (orderId) {
@@ -480,9 +544,14 @@ const ShopOrderDetailPage: React.FC = () => {
       setProcessing(false);
     }
   };
+  const handleOpenUserModal = () => {
+    if (!order?.userId) return;
+    setShowUserModal(true);
+  };
 
   const getStatusText = (status: OrderStatus) => {
     const statusMap = {
+      CREATED: "결제 미완료",
       REQUESTED: "신규주문",
       ACCEPTED: "접수완료",
       READY: "준비완료",
@@ -533,7 +602,13 @@ const ShopOrderDetailPage: React.FC = () => {
         </Card>
 
         <Card>
-          <SectionTitle>고객 정보</SectionTitle>
+          <SectionTitle>
+            고객 정보{" "}
+            <ProfileButton onClick={handleOpenUserModal}>
+              상세보기
+            </ProfileButton>
+          </SectionTitle>
+
           <InfoGroup>
             <InfoItem>
               <User size={20} />
@@ -601,7 +676,6 @@ const ShopOrderDetailPage: React.FC = () => {
           </Card>
         )}
         <ButtonGroup>
-          {/* REQUESTED: 접수 / 취소 */}
           {order.status === "REQUESTED" && (
             <>
               <Button
@@ -641,7 +715,6 @@ const ShopOrderDetailPage: React.FC = () => {
             </>
           )}
 
-          {/* READY: 완료 / 취소 */}
           {order.status === "READY" && (
             <>
               <Button
@@ -660,8 +733,6 @@ const ShopOrderDetailPage: React.FC = () => {
               </Button>
             </>
           )}
-
-          {/* COMPLETED / CANCELED: 버튼 없음 */}
         </ButtonGroup>
       </Container>
 
@@ -699,6 +770,70 @@ const ShopOrderDetailPage: React.FC = () => {
                 {processing ? "처리 중..." : "취소하기"}
               </ModalButton>
             </ModalFooter>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+      {showUserModal && (
+        <ModalOverlay onClick={() => setShowUserModal(false)}>
+          <ModalContent width="32rem" onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>고객 상세 정보</ModalTitle>
+              <CloseButton onClick={() => setShowUserModal(false)}>
+                <X size={24} />
+              </CloseButton>
+            </ModalHeader>
+
+            {userLoading ? (
+              <LoadingContainer>로딩 중...</LoadingContainer>
+            ) : userProfile ? (
+              <InfoGroup>
+                <InfoItem>
+                  <User size={20} />
+                  <InfoLabel>이름</InfoLabel>
+                  <span>{userProfile.name}</span>
+                </InfoItem>
+
+                <InfoItem>
+                  <Mail size={20} />
+                  <InfoLabel>이메일</InfoLabel>
+                  <span>{userProfile.email}</span>
+                </InfoItem>
+
+                <InfoItem>
+                  <Phone size={20} />
+                  <InfoLabel>전화번호</InfoLabel>
+                  <span>{userProfile.telnum}</span>
+                </InfoItem>
+
+                <InfoItem>
+                  <Calendar size={20} />
+                  <InfoLabel>가입일</InfoLabel>
+                  <span>
+                    {format(
+                      new Date(userProfile.createdAt),
+                      "yyyy년 MM월 dd일",
+                    )}
+                  </span>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>계정 상태</InfoLabel>
+                  <UserAccountStatusBadge $status={userProfile.accountStatus}>
+                    {userProfile.accountStatus === "ACTIVE" && "활성"}
+                    {userProfile.accountStatus === "SUSPENDED" && "정지"}
+                    {userProfile.accountStatus === "DELETED" && "탈퇴"}
+                  </UserAccountStatusBadge>
+                </InfoItem>
+                <InfoItem>
+                  <InfoLabel>활동 가능 여부</InfoLabel>
+                  <UserStatusBadge $active={userProfile.active}>
+                    {userProfile.active ? "활성" : "제한"}
+                  </UserStatusBadge>
+                </InfoItem>
+              </InfoGroup>
+            ) : (
+              <LoadingContainer>정보 없음</LoadingContainer>
+            )}
           </ModalContent>
         </ModalOverlay>
       )}

@@ -76,3 +76,23 @@ export interface BaseEntity {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  telnum: string;
+  createdAt: string;
+  accountStatus: AccountStatus;
+  active: boolean;
+}
+
+export interface ShopProfile {
+  id: number;
+  email: string;
+  shopName: string;
+  telnum: string;
+  registerAt: string;
+  accountStatus: AccountStatus;
+  status: ShopStatus;
+}

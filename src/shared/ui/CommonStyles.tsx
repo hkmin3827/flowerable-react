@@ -2,9 +2,9 @@ import styled from "styled-components";
 
 // 색상 팔레트
 export const colors = {
-  primary: "#EC4899", // pink-600
-  primaryHover: "#DB2777", // pink-700
-  primaryLight: "#FCE7F3", // pink-100
+  primary: "#3b63f2",
+  primaryHover: "#294ccc",
+  primaryLight: "#6b88f4",
   secondary: "#4B5563", // gray-600
   secondaryHover: "#374151", // gray-700
   success: "#10B981", // green-500

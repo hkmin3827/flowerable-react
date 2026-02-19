@@ -58,6 +58,32 @@ export const useLogin = () => {
         navigate("/");
       }
     },
+    onError: (error: any) => {
+      const status = error?.response?.status;
+      const data = error?.response?.data;
+
+      if (data?.message) {
+        alert(data.message);
+        return;
+      }
+
+      if (data?.code) {
+        alert(data.code);
+        return;
+      }
+
+      if (status === 401) {
+        alert("이메일 또는 비밀번호가 올바르지 않습니다.");
+        return;
+      }
+
+      if (status >= 500) {
+        alert("서버 오류가 발생했습니다.");
+        return;
+      }
+
+      alert("로그인 중 오류가 발생했습니다.");
+    },
   });
 };
 

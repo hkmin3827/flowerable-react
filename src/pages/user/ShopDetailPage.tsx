@@ -91,7 +91,7 @@ const ActionButton = styled.button<{ variant?: "primary" | "secondary" }>`
     &:hover {
       background: ${colors.primaryHover};
       transform: translateY(-1px);
-      box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.3);
+      box-shadow: 0 4px 6px -1px rgba(33, 29, 234, 0.3);
     }
   `
       : `

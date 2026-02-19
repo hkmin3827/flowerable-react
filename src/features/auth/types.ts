@@ -40,6 +40,11 @@ export interface OAuth2CompleteRequest {
   telnum: string;
 }
 
+export interface WithdrawReq {
+  confirmText: string;
+  password?: string;
+}
+
 export interface AuthResponse {
   accessToken: string | null; // TEMP 대비
   refreshToken: string | null; // TEMP 대비

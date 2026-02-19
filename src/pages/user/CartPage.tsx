@@ -101,20 +101,6 @@ export const CartPage = () => {
               ))}
             </FlowerList>
 
-            {item.wrappingColorName && (
-              <WrappingInfo>
-                <span>포장: {item.wrappingColorName}</span>
-                <span>+{item.wrappingExtraPrice?.toLocaleString()}원</span>
-              </WrappingInfo>
-            )}
-
-            {item.message && (
-              <MessageInfo>
-                <MessageLabel>요청 사항:</MessageLabel>
-                <MessageText>{item.message}</MessageText>
-              </MessageInfo>
-            )}
-
             <ItemFooter>
               <ItemTotalBox>
                 <TotalLabel>소계</TotalLabel>
@@ -168,9 +154,9 @@ const Title = styled.h1`
 `;
 const ClearButton = styled.button`
   padding: 0.5rem 1rem;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fca5a5;
+  background: #bcbcbc;
+  color: #fff;
+  border: 1px solid #d9d9d9;
   border-radius: 0.375rem;
   font-weight: 500;
   cursor: pointer;
@@ -198,7 +184,7 @@ const ShopHeader = styled.div`
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #fce7f3;
+  border-bottom: 2px solid #f7ca23;
 `;
 const ShopName = styled.h2`
   font-size: 1.125rem;
@@ -207,9 +193,9 @@ const ShopName = styled.h2`
 `;
 const RemoveShopButton = styled.button`
   padding: 0.25rem 0.75rem;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fca5a5;
+  background: #bcbcbc;
+  color: #fff;
+  border: 1px solid #d9d9d9;
   border-radius: 0.375rem;
   font-size: 0.875rem;
   cursor: pointer;
@@ -239,7 +225,7 @@ const FlowerItem = styled.div`
   align-items: center;
   gap: 1rem;
   padding: 0.75rem;
-  background: #fdf2f8;
+  background: #fff18340;
   border-radius: 0.5rem;
 `;
 const FlowerImage = styled.img`
@@ -263,33 +249,7 @@ const FlowerDetail = styled.div`
 `;
 const FlowerPrice = styled.div`
   font-weight: 600;
-  color: #ec4899;
-`;
-const WrappingInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: 0.625rem 0.875rem;
-  background: #eff6ff;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  margin-bottom: 0.75rem;
-  color: #1d4ed8;
-`;
-const MessageInfo = styled.div`
-  padding: 0.625rem 0.875rem;
-  background: #fefce8;
-  border-radius: 0.375rem;
-  margin-bottom: 0.75rem;
-`;
-const MessageLabel = styled.div`
-  font-weight: 600;
-  font-size: 0.8rem;
-  color: #92400e;
-  margin-bottom: 0.25rem;
-`;
-const MessageText = styled.div`
-  font-size: 0.85rem;
-  color: #78350f;
+  color: #000;
 `;
 const ItemFooter = styled.div`
   display: flex;
@@ -314,7 +274,7 @@ const TotalPrice = styled.div`
 `;
 const OrderItemButton = styled.button`
   padding: 0.625rem 1.25rem;
-  background: linear-gradient(135deg, #ec4899, #db2777);
+  background: linear-gradient(135deg, #3b63f2, #294ccc);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -328,7 +288,7 @@ const OrderItemButton = styled.button`
 `;
 const Summary = styled.div`
   background: white;
-  border: 2px solid #fce7f3;
+  border: 2px solid #3b63f2;
   border-radius: 0.75rem;
   padding: 1.5rem;
 `;
@@ -363,7 +323,7 @@ const GrandTotalLabel = styled.div`
 const GrandTotalPrice = styled.div`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ec4899;
+  color: #3b63f2;
 `;
 const SummaryNote = styled.div`
   font-size: 0.825rem;
@@ -385,7 +345,7 @@ const EmptyText = styled.div`
 `;
 const GoShoppingButton = styled.button`
   padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, #ec4899, #db2777);
+  background: linear-gradient(135deg, #3b63f2, #294ccc);
   color: white;
   border: none;
   border-radius: 0.5rem;

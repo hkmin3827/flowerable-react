@@ -227,39 +227,81 @@ const Link = styled.a`
 `;
 
 const Divider = styled.span`
-  margin: 0 0.5rem;
-  color: #d1d5db;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: #9ca3af;
+  font-size: 0.875rem;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  &::before {
+    margin-right: 0.75rem;
+  }
+
+  &::after {
+    margin-left: 0.75rem;
+  }
 `;
 
 const SocialLoginSection = styled.div`
   margin-top: 2rem;
 `;
 
-const SocialButton = styled.button<{ provider: "kakao" | "naver" | "google" }>`
+const SocialButton = styled.button<{
+  provider: "google" | "kakao" | "naver";
+}>`
   width: 100%;
-  padding: 0.75rem;
-  margin-top: 0.75rem;
+  height: 48px;
+  border-radius: 12px;
   border: none;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
+
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: normal;
   cursor: pointer;
-  transition: opacity 0.2s;
+
+  #google-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+  #kakao,
+  #naver {
+    height: 100%;
+  }
 
   ${({ provider }) => {
-    const colors = {
-      kakao: { bg: "#FEE500", color: "#000000" },
-      naver: { bg: "#03C75A", color: "#FFFFFF" },
-      google: { bg: "#FFFFFF", color: "#000000" },
-    };
-    return `
-      background-color: ${colors[provider].bg};
-      color: ${colors[provider].color};
-      ${provider === "google" ? "border: 1px solid #d1d5db;" : ""}
-    `;
+    switch (provider) {
+      case "google":
+        return `
+          background: #ffffff;
+          color: #1f1f1f;
+          border: 1px solid #dadce0;
+        `;
+      case "kakao":
+        return `
+          background: #FEE500;
+          color: #3C1E1E;
+        `;
+      case "naver":
+        return `
+          background: #03A94D;
+          color: #ffffff;
+        `;
+    }
   }}
-
-  &:hover {
-    opacity: 0.9;
-  }
 `;

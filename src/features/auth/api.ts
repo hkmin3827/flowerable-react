@@ -7,6 +7,7 @@ import {
   OAuth2CompleteRequest,
   OAuthTokenExchangeRequest,
   OAuthCompleteRequest,
+  WithdrawReq,
 } from "./types";
 
 export const authApi = {
@@ -88,6 +89,7 @@ export const authApi = {
     ),
 
   // 회원 탈퇴
-  withdraw: (password: string) =>
-    axiosInstance.delete("/auth/withdraw", { data: { password } }),
+  withdraw: (data: WithdrawReq) => {
+    return axiosInstance.post("/auth/withdraw", data);
+  },
 };

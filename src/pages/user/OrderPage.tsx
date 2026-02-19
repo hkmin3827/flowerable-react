@@ -280,7 +280,7 @@ const OrderCard = styled.div`
 const ShopInfoBox = styled.div`
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
-  border-bottom: 2px solid #fce7f3;
+  border-bottom: 2px solid #f7ca23;
 `;
 const ShopName = styled.h1`
   font-size: 1.5rem;
@@ -309,12 +309,12 @@ const FlowerGrid = styled.div`
   gap: 1rem;
 `;
 const FlowerCard = styled.div`
-  border: 1px solid #fce7f3;
+  border: 1px solid #f7ca23;
   border-radius: 0.5rem;
   overflow: hidden;
   transition: box-shadow 0.2s;
   &:hover {
-    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.15);
+    box-shadow: 0 4px 12px rgba(255, 251, 2, 0.15);
   }
 `;
 const FlowerInfo = styled.div`
@@ -326,7 +326,7 @@ const FlowerName = styled.div`
   margin-bottom: 0.25rem;
 `;
 const FlowerPrice = styled.div`
-  color: #ec4899;
+  color: #000;
   font-weight: 600;
   font-size: 0.875rem;
   margin-bottom: 0.75rem;
@@ -338,17 +338,17 @@ const ColorSelect = styled.div`
 `;
 const ColorButton = styled.button`
   padding: 0.25rem 0.625rem;
-  background: #fdf2f8;
-  border: 1px solid #f9a8d4;
+  background: #fffff9;
+  border: 1px solid #f7ca23;
   border-radius: 9999px;
   font-size: 0.75rem;
   cursor: pointer;
-  color: #be185d;
+  color: #000;
   transition: all 0.2s;
   &:hover {
-    background: #ec4899;
-    color: white;
-    border-color: #ec4899;
+    background: #f7ca23;
+    color: black;
+    border-color: #f8c612;
   }
 `;
 const SelectionList = styled.div`
@@ -361,9 +361,9 @@ const SelectionItem = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 0.875rem 1rem;
-  background: #fdf2f8;
+  background: #f3f5ff;
   border-radius: 0.5rem;
-  border: 1px solid #fce7f3;
+  border: 1px solid #6b88f4;
 `;
 const SelectionInfo = styled.div`
   display: flex;
@@ -380,14 +380,14 @@ const QuantityControl = styled.div`
 const QuantityButton = styled.button`
   width: 1.75rem;
   height: 1.75rem;
-  background: #ec4899;
+  background: #3b63f2;
   color: white;
   border: none;
   border-radius: 0.375rem;
   cursor: pointer;
   font-size: 1rem;
   &:hover {
-    background: #db2777;
+    background: #3b63f2;
   }
 `;
 const QuantityValue = styled.span`
@@ -404,9 +404,9 @@ const SelectionPrice = styled.div`
 `;
 const RemoveButton = styled.button`
   padding: 0.25rem 0.625rem;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fca5a5;
+  background: #bcbcbc;
+  color: #ffffff;
+  border: 1px solid #d9d9d9;
   border-radius: 0.375rem;
   font-size: 0.75rem;
   cursor: pointer;
@@ -432,7 +432,7 @@ const TotalLabel = styled.div`
 const TotalPrice = styled.div`
   font-size: 1.375rem;
   font-weight: 700;
-  color: #ec4899;
+  color: #3b63f2;
 `;
 const ButtonGroup = styled.div`
   display: grid;
@@ -442,20 +442,20 @@ const ButtonGroup = styled.div`
 const AddToCartButton = styled.button`
   padding: 1rem;
   background: white;
-  color: #ec4899;
-  border: 2px solid #ec4899;
+  color: #3b63f2;
+  border: 2px solid #3b63f2;
   border-radius: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   &:hover {
-    background: #fdf2f8;
+    background: #f3f5ff;
   }
 `;
 const OrderButton = styled.button`
   padding: 1rem;
-  background: linear-gradient(135deg, #ec4899, #db2777);
+  background: linear-gradient(135deg, #3b63f2, #294ccc);
   color: white;
   border: none;
   border-radius: 0.5rem;
