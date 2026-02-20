@@ -92,4 +92,15 @@ export const authApi = {
   withdraw: (data: WithdrawReq) => {
     return axiosInstance.post("/auth/withdraw", data);
   },
+  // 비밀번호 찾기 - 재설정 링크 이메일 전송
+  forgotPassword: (email: string): Promise<void> =>
+    axiosInstance
+      .post("/auth/password/forgot", { email })
+      .then(() => undefined),
+
+  // 비밀번호 재설정
+  resetPassword: (token: string, newPassword: string): Promise<void> =>
+    axiosInstance
+      .post("/auth/password/reset", { token, newPassword })
+      .then(() => undefined),
 };

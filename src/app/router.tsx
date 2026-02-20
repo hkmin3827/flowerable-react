@@ -50,6 +50,8 @@ import AdminFlowerManagePage from "@/pages/admin/AdminFlowerManagePage";
 import ChatListPage from "@/pages/common/ChatListPage";
 import { ShopImagesPage } from "@/pages/shop/ShopImagesPage";
 import { ShopImagesViewPage } from "@/pages/user/ShopImagesViewPage";
+import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 
 // Protected Route Component
 const ProtectedRoute = ({
@@ -89,6 +91,14 @@ export const router = createBrowserRouter([
   {
     path: "/oauth/complete",
     element: <OAuthCompleteProfile />,
+  },
+  {
+    path: "/find-password",
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
   },
 
   {

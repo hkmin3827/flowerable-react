@@ -7,6 +7,14 @@ import { format } from "date-fns";
 import { ArrowLeft, MapPin, Phone } from "lucide-react";
 import { OrderStatus } from "@/shared/types";
 import { colors, LoadingContainer } from "@/shared/ui/CommonStyles";
+import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
+import { PAYMENT_METHODS, type PaymentMethod } from "@/features/payment/types";
+
+const TOSS_CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY;
+
+// ─────────────────────────────────────────────────────────────
+// Styled Components
+// ─────────────────────────────────────────────────────────────
 
 const Container = styled.div`
   max-width: 64rem;
@@ -86,7 +94,7 @@ const StatusBadge = styled.span<{ status: OrderStatus }>`
   ${({ status }) => {
     switch (status) {
       case "CREATED":
-        return `background: #F3F4F6; color: #000;`;
+        return `background: #FEF3C7; color: #D97706;`;
       case "REQUESTED":
         return `background: ${colors.errorLight}; color: ${colors.error};`;
       case "ACCEPTED":
@@ -119,7 +127,6 @@ const InfoGroup = styled.div`
 const InfoItem = styled.div`
   display: flex;
   align-items: center;
-
   gap: 0.5rem;
   color: ${colors.textSecondary};
 `;
@@ -239,12 +246,103 @@ const DisabledButton = styled(Button)`
   }
 `;
 
+const PaymentRetryCard = styled(Card)`
+  border: 2px dashed #f59e0b;
+  background: #fffbeb;
+`;
+
+const PaymentRetryTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 0.5rem;
+`;
+
+const PaymentRetryDesc = styled.p`
+  font-size: 0.875rem;
+  color: #b45309;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+`;
+
+const PaymentMethodList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+`;
+
+const PaymentMethodItem = styled.div<{ $selected: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid ${(p) => (p.$selected ? "#3b63f2" : "#e5e7eb")};
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background: ${(p) => (p.$selected ? "#f3f5ff" : "white")};
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #3b63f2;
+  }
+`;
+
+const MethodRadio = styled.div<{ $selected: boolean }>`
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid ${(p) => (p.$selected ? "#3b63f2" : "#d1d5db")};
+  background: ${(p) => (p.$selected ? "#3b63f2" : "white")};
+  flex-shrink: 0;
+  transition: all 0.2s;
+`;
+
+const MethodLabel = styled.span`
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.875rem;
+`;
+
+const MethodDesc = styled.span`
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+`;
+
+const PayButton = styled.button`
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #3b63f2, #294ccc);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 const UserOrderDetailPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("CARD");
 
   useEffect(() => {
     if (orderId) fetchOrderDetail();
@@ -277,8 +375,37 @@ const UserOrderDetailPage: React.FC = () => {
     }
   };
 
+  const handleRetryPayment = async () => {
+    if (!order || paying) return;
+    setPaying(true);
+
+    try {
+      const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY);
+      const payment = tossPayments.payment({ customerKey: ANONYMOUS });
+
+      await payment.requestPayment({
+        method:
+          selectedMethod === "CARD"
+            ? "CARD"
+            : selectedMethod === "TRANSFER"
+              ? "TRANSFER"
+              : "VIRTUAL_ACCOUNT",
+        amount: { currency: "KRW", value: order.totalPrice },
+        orderId: order.orderNumber,
+        orderName: `${order.shopName} 꽃 주문`,
+        successUrl: `${window.location.origin}/payment/success?dbOrderId=${order.orderId}`,
+        failUrl: `${window.location.origin}/payment/fail`,
+      });
+    } catch (error: any) {
+      if (error?.code !== "USER_CANCEL") {
+        alert(error?.message || "결제 처리 중 오류가 발생했습니다.");
+      }
+      setPaying(false);
+    }
+  };
+
   const getStatusText = (status: OrderStatus) => {
-    const statusMap = {
+    const statusMap: Record<OrderStatus, string> = {
       CREATED: "결제 미완료",
       REQUESTED: "주문요청",
       ACCEPTED: "접수완료",
@@ -314,6 +441,40 @@ const UserOrderDetailPage: React.FC = () => {
         <PageTitle>주문 상세</PageTitle>
       </Header>
 
+      {order.status === "CREATED" && (
+        <PaymentRetryCard>
+          <PaymentRetryTitle>
+            ⚠️ 결제가 완료되지 않은 주문입니다
+          </PaymentRetryTitle>
+          <PaymentRetryDesc>
+            결제를 완료해야 주문이 접수됩니다. 결제 수단을 선택하고 아래 버튼을
+            눌러 결제를 진행해주세요.
+          </PaymentRetryDesc>
+
+          <PaymentMethodList>
+            {PAYMENT_METHODS.map((method) => (
+              <PaymentMethodItem
+                key={method.value}
+                $selected={selectedMethod === method.value}
+                onClick={() => setSelectedMethod(method.value)}
+              >
+                <MethodRadio $selected={selectedMethod === method.value} />
+                <div>
+                  <MethodLabel>{method.label}</MethodLabel>
+                  <MethodDesc>· {method.description}</MethodDesc>
+                </div>
+              </PaymentMethodItem>
+            ))}
+          </PaymentMethodList>
+
+          <PayButton onClick={handleRetryPayment} disabled={paying}>
+            {paying
+              ? "결제 처리 중..."
+              : `${order.totalPrice.toLocaleString()}원 결제하기`}
+          </PayButton>
+        </PaymentRetryCard>
+      )}
+
       <Card>
         <CardHeader>
           <OrderInfo>
@@ -340,7 +501,6 @@ const UserOrderDetailPage: React.FC = () => {
           </InfoItem>
           <InfoItem>
             <Phone size={20} />
-
             <InfoLabel>{order.opponentTelnum}</InfoLabel>
           </InfoItem>
         </InfoGroup>
@@ -355,7 +515,7 @@ const UserOrderDetailPage: React.FC = () => {
                 <ItemName>{item.flowerName}</ItemName>
                 <ItemQuantity>{item.quantity}개</ItemQuantity>
               </ItemInfo>
-              <ItemPrice>{item.itemTotalPrice}원</ItemPrice>
+              <ItemPrice>{item.itemTotalPrice.toLocaleString()}원</ItemPrice>
             </OrderItem>
           ))}
         </ItemList>
@@ -366,17 +526,17 @@ const UserOrderDetailPage: React.FC = () => {
         <PriceGroup>
           <PriceRow>
             <PriceLabel>상품 금액</PriceLabel>
-            <span>{order.totalFlowerPrice}원</span>
+            <span>{order.totalFlowerPrice.toLocaleString()}원</span>
           </PriceRow>
           {order.wrappingColorName && (
             <PriceRow>
               <PriceLabel>포장 ({order.wrappingColorName})</PriceLabel>
-              <span>{order.wrappingExtraPrice}원</span>
+              <span>{order.wrappingExtraPrice.toLocaleString()}원</span>
             </PriceRow>
           )}
           <TotalRow>
             <TotalLabel>총 금액</TotalLabel>
-            <TotalPrice>{order.totalPrice}원</TotalPrice>
+            <TotalPrice>{order.totalPrice.toLocaleString()}원</TotalPrice>
           </TotalRow>
         </PriceGroup>
       </Card>
@@ -402,9 +562,9 @@ const UserOrderDetailPage: React.FC = () => {
         <Button onClick={handleCancelOrder} disabled={cancelling}>
           {cancelling ? "취소 중..." : "주문 취소"}
         </Button>
-      ) : (
+      ) : order.status !== "CREATED" ? (
         <DisabledButton disabled>취소 불가</DisabledButton>
-      )}
+      ) : null}
     </Container>
   );
 };

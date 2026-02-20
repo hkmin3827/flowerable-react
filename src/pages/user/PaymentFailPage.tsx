@@ -8,7 +8,6 @@ const PaymentFailPage = () => {
   const errorCode = searchParams.get("code");
   const errorMessage =
     searchParams.get("message") || "결제가 취소되었거나 실패하였습니다.";
-  const orderId = searchParams.get("orderId");
 
   const getErrorGuide = (code: string | null) => {
     if (!code) return null;

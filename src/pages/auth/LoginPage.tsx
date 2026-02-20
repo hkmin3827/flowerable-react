@@ -1,13 +1,17 @@
 import { LoginForm } from "@/features/auth/components";
 import { Role } from "@/shared/types";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 
 export const LoginPage = () => {
   const [role, setRole] = useState<Role>("ROLE_USER");
+  const location = useLocation();
+  const successMessage = (location.state as any)?.message;
 
   return (
     <Container>
+      {successMessage && <SuccessBanner>{successMessage}</SuccessBanner>}
       <TypeSelector>
         <TypeButton
           $active={role === "ROLE_USER"}
@@ -60,4 +64,15 @@ const TypeButton = styled.button<{ $active: boolean }>`
   &:hover {
     border-color: #3b82f6;
   }
+`;
+
+const SuccessBanner = styled.div`
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
 `;

@@ -1,12 +1,4 @@
-import { Color } from "@/shared/types";
-
-export enum OrderStatus {
-  REQUESTED = "REQUESTED",
-  ACCEPTED = "ACCEPTED",
-  READY = "READY",
-  COMPLETED = "COMPLETED",
-  CANCELED = "CANCELED",
-}
+import { Color, OrderStatus } from "@/shared/types";
 
 export interface OrderItem {
   flowerName: string;

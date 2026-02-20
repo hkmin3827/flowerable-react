@@ -88,8 +88,10 @@ const StatusBadge = styled.span<{ status: OrderStatus }>`
 
   ${({ status }) => {
     switch (status) {
-      case "REQUESTED":
+      case "CREATED":
         return `background: #FEF3C7; color: #D97706;`;
+      case "REQUESTED":
+        return `background: ${colors.errorLight}; color: ${colors.error};`;
       case "ACCEPTED":
         return `background: ${colors.infoLight}; color: ${colors.info};`;
       case "READY":
@@ -97,7 +99,7 @@ const StatusBadge = styled.span<{ status: OrderStatus }>`
       case "COMPLETED":
         return `background: #F3F4F6; color: #6B7280;`;
       case "CANCELED":
-        return `background: ${colors.errorLight}; color: ${colors.error};`;
+        return `background: #F3F4F6; color: #9CA3AF;`;
       default:
         return `background: #F3F4F6; color: #6B7280;`;
     }

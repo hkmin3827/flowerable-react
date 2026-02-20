@@ -28,18 +28,18 @@ const PaymentSuccessPage = () => {
     }
 
     try {
-      const res = await paymentAPI.confirm({ paymentKey, orderId, amount });
-      const confirmedOrderId = res.data.orderId || Number(dbOrderId);
-      setStatus("success");
-      setTimeout(() => {
-        navigate(`/orders/${confirmedOrderId}`, { replace: true });
-      }, 1800);
+      await paymentAPI.confirm({ paymentKey, orderId, amount });
     } catch (error: any) {
+      console.warn("confirm 실패 → 서버 복구에 맡김", error);
       setErrorMsg(
         error.response?.data?.message || "결제 승인 중 오류가 발생했습니다.",
       );
-      setStatus("error");
     }
+    setStatus("success");
+
+    setTimeout(() => {
+      navigate(`/orders/${dbOrderId}`, { replace: true });
+    }, 1800);
   };
 
   if (status === "loading") {
@@ -49,19 +49,6 @@ const PaymentSuccessPage = () => {
           <Spinner />
           <Title>결제 승인 중...</Title>
           <Desc>잠시만 기다려주세요.</Desc>
-        </Card>
-      </Container>
-    );
-  }
-
-  if (status === "error") {
-    return (
-      <Container>
-        <Card>
-          <ErrorIcon>⚠️</ErrorIcon>
-          <Title>결제 승인 실패</Title>
-          <Desc>{errorMsg}</Desc>
-          <HomeButton onClick={() => navigate("/")}>홈으로</HomeButton>
         </Card>
       </Container>
     );

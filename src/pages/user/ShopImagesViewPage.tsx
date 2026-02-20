@@ -218,14 +218,6 @@ const ThumbnailBadge = styled.div`
   font-weight: 600;
 `;
 
-const ImageDate = styled.div`
-  padding: 0.75rem;
-  border-top: 1px solid ${colors.border};
-  font-size: 0.75rem;
-  color: ${colors.textSecondary};
-  text-align: center;
-`;
-
 const LoadingContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -257,11 +249,6 @@ const LoadingText = styled.p`
 const EmptyState = styled.div`
   text-align: center;
   padding: 4rem 1rem;
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 4rem;
-  margin-bottom: 1rem;
 `;
 
 const EmptyText = styled.p`
