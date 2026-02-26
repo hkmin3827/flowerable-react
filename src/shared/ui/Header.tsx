@@ -6,7 +6,10 @@ import { useLogout } from "@/features/auth/hooks";
 import { useCartCount } from "@/features/cart/hooks";
 import logo from "../../images/logos/flowerable로고배경제거.png";
 import { NotificationDropdown } from "@/features/notification/components/NotificationDropdown";
-import { useUnreadNotificationCount } from "@/features/notification/hooks";
+import {
+  useUnreadNotificationCount,
+  useNotificationSSE,
+} from "@/features/notification/hooks";
 
 export const Header = () => {
   const { isAuthenticated, user } = useAuthStore();
@@ -18,6 +21,9 @@ export const Header = () => {
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const { data: unreadCount } = useUnreadNotificationCount(isAuthenticated);
+
+  // 로그인 시 SSE 구독 시작, 로그아웃 시 자동 종료
+  useNotificationSSE();
 
   const handleLogout = () => {
     logout();

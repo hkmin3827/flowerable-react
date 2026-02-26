@@ -7,16 +7,7 @@ import { ko } from "date-fns/locale";
 import { useAuthStore } from "@/features/auth/store";
 import { colors, LoadingContainer } from "@/shared/ui/CommonStyles";
 import { MessageSquare, ChevronRight } from "lucide-react";
-
-export interface ChatRoomListRes {
-  id: number;
-  userId: number;
-  shopId: number;
-  opponentName: string;
-  lastMessage: string | null;
-  lastMessageAt: string | null;
-  unreadCount: number;
-}
+import { ChatRoomListRes } from "@/features/chat/types";
 
 const Container = styled.div`
   max-width: 80rem;

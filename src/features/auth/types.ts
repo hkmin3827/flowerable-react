@@ -27,13 +27,6 @@ export interface ShopSignupRequest {
   address: string;
 }
 
-export interface OAuth2LoginRequest {
-  provider: Provider;
-  providerId: string;
-  email?: string;
-  name?: string;
-}
-
 export interface OAuth2CompleteRequest {
   accountId: number;
   email: string;

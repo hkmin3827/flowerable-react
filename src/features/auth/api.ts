@@ -11,13 +11,11 @@ import {
 } from "./types";
 
 export const authApi = {
-  // 이메일 로그인
   login: async (data: LoginRequest): Promise<AuthResponse> => {
     const res = await axiosInstance.post<AuthResponse>("/auth/login", data);
     return res.data;
   },
 
-  // 일반 회원가입
   signupUser: async (data: UserSignupRequest): Promise<AuthResponse> => {
     const res = await axiosInstance.post<AuthResponse>(
       "/auth/users/signup",
@@ -26,7 +24,6 @@ export const authApi = {
     return res.data;
   },
 
-  // 샵 회원가입
   signupShop: async (data: ShopSignupRequest): Promise<AuthResponse> => {
     const res = await axiosInstance.post<AuthResponse>(
       "/auth/shops/signup",
@@ -51,9 +48,7 @@ export const authApi = {
       throw error;
     }
   },
-  /**
-   * OAuth 추가 정보 입력 완료
-   */
+
   completeOAuthSignup: async (
     data: OAuthCompleteRequest,
   ): Promise<AuthResponse> => {
@@ -92,6 +87,7 @@ export const authApi = {
   withdraw: (data: WithdrawReq) => {
     return axiosInstance.post("/auth/withdraw", data);
   },
+
   // 비밀번호 찾기 - 재설정 링크 이메일 전송
   forgotPassword: (email: string): Promise<void> =>
     axiosInstance

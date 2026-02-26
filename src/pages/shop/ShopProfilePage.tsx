@@ -2,15 +2,15 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { axiosInstance } from "@/shared/api/axios";
 import { useAuthStore } from "@/features/auth/store";
-import { authApi } from "@/features/auth/api";
 import { AccountStatus, ShopProfile } from "@/shared/types";
-import { useNavigate } from "react-router-dom";
+import { useWithdraw } from "@/features/auth/hooks";
+import { WithdrawReq } from "@/features/auth/types";
 
 export const ShopProfilePage = () => {
-  const { user, clearAuth } = useAuthStore();
+  const { user } = useAuthStore();
   const [profile, setProfile] = useState<ShopProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const withdrawMutation = useWithdraw();
 
   useEffect(() => {
     fetchProfile();
@@ -56,36 +56,34 @@ export const ShopProfilePage = () => {
       password = pw;
     }
 
-    try {
-      const payload = { confirmText: input, password: password! };
+    const payload: WithdrawReq = {
+      confirmText: input,
+      password,
+    };
 
-      await authApi.withdraw(payload as any);
+    withdrawMutation.mutate(payload, {
+      onError: (error: any) => {
+        const status = error?.response?.status;
+        const message = error?.response?.data?.message;
 
-      alert("탈퇴가 완료되었습니다.");
-      clearAuth();
-      navigate("/login");
-    } catch (error: any) {
-      const status = error.response.status;
-      const message = error?.response?.data?.message;
+        if (status === 400) {
+          alert(message ?? "요청이 올바르지 않습니다.");
+          return;
+        }
 
-      if (status === 400) {
-        // confirmText 틀림 / validation 등
-        alert(message ?? "요청이 올바르지 않습니다.");
-        return;
-      }
+        if (status === 401) {
+          alert(message ?? "비밀번호가 올바르지 않습니다.");
+          return;
+        }
 
-      if (status === 401) {
-        alert(message ?? "비밀번호가 올바르지 않습니다.");
-        return;
-      }
+        if (status === 403) {
+          alert(message ?? "탈퇴 권한이 없습니다.");
+          return;
+        }
 
-      if (status === 403) {
-        alert(message ?? "탈퇴 권한이 없습니다.");
-        return;
-      }
-
-      alert(message ?? "탈퇴 처리 중 오류가 발생했습니다.");
-    }
+        alert(message ?? "탈퇴 처리 중 오류가 발생했습니다.");
+      },
+    });
   };
 
   if (loading) {

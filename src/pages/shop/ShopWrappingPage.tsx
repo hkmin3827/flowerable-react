@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { shopApi } from "@/features/shop/api";
 import { COLOR_PALETTE } from "@/shared/constants/colors";
 
 export const ShopWrappingPage = () => {
-  const navigate = useNavigate();
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [price, setPrice] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);

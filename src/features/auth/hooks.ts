@@ -1,9 +1,15 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "./api";
 import { useAuthStore } from "./store";
-import { LoginRequest, UserSignupRequest, ShopSignupRequest } from "./types";
+import {
+  LoginRequest,
+  UserSignupRequest,
+  ShopSignupRequest,
+  WithdrawReq,
+} from "./types";
 import { useQueryClient } from "@tanstack/react-query";
+import { closeSSE } from "@/features/notification/hooks";
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
@@ -87,13 +93,13 @@ export const useLogin = () => {
   });
 };
 
-// 회원가입 mutation (User)
 export const useSignupUser = () => {
   const navigate = useNavigate();
 
   return useMutation({
     mutationFn: (data: UserSignupRequest) => authApi.signupUser(data),
     onSuccess: () => {
+      alert("회원가입이 완료되었습니다.");
       navigate("/login");
     },
     onError: (error: any) => {
@@ -121,6 +127,7 @@ export const useSignupShop = () => {
   return useMutation({
     mutationFn: (data: ShopSignupRequest) => authApi.signupShop(data),
     onSuccess: () => {
+      alert("회원가입이 완료되었습니다.");
       navigate("/login");
     },
     onError: (error: any) => {
@@ -149,21 +156,12 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: () => authApi.logout(),
     onSuccess: () => {
+      closeSSE();
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       clearAuth();
       navigate("/login");
     },
-  });
-};
-
-// 이메일 중복 체크 query
-export const useCheckEmail = (email: string, enabled: boolean = false) => {
-  return useQuery({
-    queryKey: ["checkEmail", email],
-    queryFn: () => authApi.checkEmail(email),
-    enabled: enabled && !!email,
-    staleTime: 0,
   });
 };
 
@@ -173,11 +171,13 @@ export const useWithdraw = () => {
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
   return useMutation({
-    mutationFn: (password: string) => authApi.withdraw(password),
+    mutationFn: (data: WithdrawReq) => authApi.withdraw(data),
     onSuccess: () => {
+      closeSSE();
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       clearAuth();
+      alert("회원탈퇴가 완료되었습니다.");
       navigate("/");
     },
   });

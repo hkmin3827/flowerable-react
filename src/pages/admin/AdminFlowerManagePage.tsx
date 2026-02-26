@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { adminFlowerAPI } from "@/features/admin/api";
-import {
-  AdminFlower,
-  FlowerCreateReq,
-  FlowerUpdateReq,
-} from "@/features/admin/types";
+import { AdminFlower, FlowerUpdateReq } from "@/features/admin/types";
 import {
   colors,
   Container,
@@ -34,7 +30,7 @@ import {
   FormGroup,
   Label,
 } from "@/shared/ui/CommonStyles";
-import { Plus, X, Edit } from "lucide-react";
+import { X, Edit } from "lucide-react";
 
 const ActionButtons = styled.div`
   display: flex;
@@ -61,10 +57,6 @@ const FilterBar = styled.div`
   margin-bottom: 1.5rem;
 `;
 
-const AddButton = styled(Button)`
-  margin-left: auto;
-`;
-
 const AdminFlowerManagePage: React.FC = () => {
   const [flowers, setFlowers] = useState<AdminFlower[]>([]);
   const [loading, setLoading] = useState(false);
@@ -73,7 +65,6 @@ const AdminFlowerManagePage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<boolean | undefined>(
     undefined,
   );
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedFlower, setSelectedFlower] = useState<AdminFlower | null>(
     null,
@@ -203,20 +194,24 @@ const AdminFlowerManagePage: React.FC = () => {
                       <ActionButtons>
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => handleOpenEditModal(flower)}
-                        >
-                          <Edit size={14} />
-                          수정
-                        </Button>
-                        <Button
-                          size="sm"
                           variant={flower.active ? "error" : "success"}
                           onClick={() =>
                             handleToggleFlowerStatus(flower.id, flower.active)
                           }
                         >
                           {flower.active ? "비활성" : "활성"}
+                        </Button>
+                      </ActionButtons>
+                    </TableCell>
+                    <TableCell>
+                      <ActionButtons>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleOpenEditModal(flower)}
+                        >
+                          <Edit size={14} />
+                          수정
                         </Button>
                       </ActionButtons>
                     </TableCell>

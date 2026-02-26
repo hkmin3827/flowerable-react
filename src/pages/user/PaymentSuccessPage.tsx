@@ -9,7 +9,6 @@ const PaymentSuccessPage = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading",
   );
-  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     confirmPayment();
@@ -22,7 +21,6 @@ const PaymentSuccessPage = () => {
     const dbOrderId = searchParams.get("dbOrderId");
 
     if (!paymentKey || !orderId || !amount) {
-      setErrorMsg("결제 정보가 올바르지 않습니다.");
       setStatus("error");
       return;
     }
@@ -31,9 +29,6 @@ const PaymentSuccessPage = () => {
       await paymentAPI.confirm({ paymentKey, orderId, amount });
     } catch (error: any) {
       console.warn("confirm 실패 → 서버 복구에 맡김", error);
-      setErrorMsg(
-        error.response?.data?.message || "결제 승인 중 오류가 발생했습니다.",
-      );
     }
     setStatus("success");
 
@@ -104,10 +99,6 @@ const SuccessIcon = styled.div`
   font-size: 4rem;
   margin-bottom: 1rem;
 `;
-const ErrorIcon = styled.div`
-  font-size: 4rem;
-  margin-bottom: 1rem;
-`;
 const Title = styled.h1`
   font-size: 1.5rem;
   font-weight: 700;
@@ -130,18 +121,5 @@ const ProgressBar = styled.div`
     height: 100%;
     background: linear-gradient(90deg, #ec4899, #db2777);
     animation: ${fillBar} 1.8s linear forwards;
-  }
-`;
-const HomeButton = styled.button`
-  padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, #ec4899, #db2777);
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  &:hover {
-    opacity: 0.9;
   }
 `;

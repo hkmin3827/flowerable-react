@@ -8,7 +8,7 @@ export interface ChatRoomListRes {
   unreadCount: number;
 }
 
-export interface ChatRoomEnterReq {
+export interface ChatRoomRes {
   id: number;
   userId: number;
   shopId: number;

@@ -1,10 +1,5 @@
 import { axiosInstance } from "@/shared/api/axios";
-import type {
-  CartInfo,
-  CartCount,
-  AddToCartRequest,
-  UpdateCartItemRequest,
-} from "./types";
+import type { CartInfo, CartCount, AddToCartRequest } from "./types";
 
 export const cartApi = {
   // 장바구니 조회

@@ -7,7 +7,7 @@ import { ShopDetailResponse, ShopImageResponse } from "@/features/shop/types";
 import { chatAPI } from "@/features/chat/api";
 import { useAuthStore } from "@/features/auth/store";
 import { colors, LoadingContainer } from "@/shared/ui/CommonStyles";
-import { ChatRoomEnterReq } from "@/features/chat/types";
+import { ChatRoomListRes } from "@/features/chat/types";
 import ChatRoomModal from "@/features/chat/components/ChatRoomModal";
 import DefaultShopThumbnail from "@/images/DefaultShopImageThumbnail.png";
 
@@ -215,7 +215,7 @@ const ShopDetailPage: React.FC = () => {
   const { isAuthenticated, user } = useAuthStore();
   const [shop, setShop] = useState<ShopDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [chatRoom, setChatRoom] = useState<ChatRoomEnterReq | null>(null);
+  const [chatRoom, setChatRoom] = useState<ChatRoomListRes | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [thumbnail, setThumbnail] = useState<ShopImageResponse | null>(null);
   const [latestImages, setLatestImages] = useState<ShopImageResponse[]>([]);
@@ -262,7 +262,7 @@ const ShopDetailPage: React.FC = () => {
   };
 
   const handleInquiry = async () => {
-    if (!shopId) return;
+    if (!shopId || !shop) return;
 
     if (!isAuthenticated) {
       alert("로그인이 필요합니다.");
@@ -273,7 +273,15 @@ const ShopDetailPage: React.FC = () => {
     try {
       const res = await chatAPI.enterChatRoom(Number(shopId));
 
-      setChatRoom(res.data);
+      const chatRoomData: ChatRoomListRes = {
+        ...res.data,
+        opponentName: shop!.shopName,
+        lastMessage: "",
+        lastMessageAt: new Date().toISOString(),
+        unreadCount: 0,
+      };
+
+      setChatRoom(chatRoomData);
 
       setChatOpen(true);
     } catch (error) {
