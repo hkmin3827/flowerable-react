@@ -10,6 +10,8 @@ import {
 } from "./types";
 import { useQueryClient } from "@tanstack/react-query";
 import { closeSSE } from "@/features/notification/hooks";
+import { extractErrorMessage } from "@/shared/utils/errorHandler";
+import { AxiosError } from "axios";
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
@@ -64,31 +66,14 @@ export const useLogin = () => {
         navigate("/");
       }
     },
-    onError: (error: any) => {
-      const status = error?.response?.status;
-      const data = error?.response?.data;
-
-      if (data?.message) {
-        alert(data.message);
-        return;
+    onError: (error) => {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 401) {
+          alert("이메일 또는 비밀번호가 일치하지 않습니다.");
+          return;
+        }
       }
-
-      if (data?.code) {
-        alert(data.code);
-        return;
-      }
-
-      if (status === 401) {
-        alert("이메일 또는 비밀번호가 올바르지 않습니다.");
-        return;
-      }
-
-      if (status >= 500) {
-        alert("서버 오류가 발생했습니다.");
-        return;
-      }
-
-      alert("로그인 중 오류가 발생했습니다.");
+      alert(extractErrorMessage(error));
     },
   });
 };
@@ -102,25 +87,12 @@ export const useSignupUser = () => {
       alert("회원가입이 완료되었습니다.");
       navigate("/login");
     },
-    onError: (error: any) => {
-      const serverData = error.response?.data;
-
-      if (serverData?.message) {
-        alert(serverData.message);
-        return;
-      }
-
-      if (Array.isArray(serverData?.errors) && serverData.errors.length > 0) {
-        alert(serverData.errors[0].message);
-        return;
-      }
-
-      alert("회원가입 중 서버 오류가 발생했습니다.");
+    onError: (error) => {
+      alert(extractErrorMessage(error));
     },
   });
 };
 
-// 회원가입 mutation (Shop)
 export const useSignupShop = () => {
   const navigate = useNavigate();
 
@@ -130,55 +102,45 @@ export const useSignupShop = () => {
       alert("회원가입이 완료되었습니다.");
       navigate("/login");
     },
-    onError: (error: any) => {
-      const serverData = error.response?.data;
-
-      if (serverData?.message) {
-        alert(serverData.message);
-        return;
-      }
-
-      if (Array.isArray(serverData?.errors) && serverData.errors.length > 0) {
-        alert(serverData.errors[0].message);
-        return;
-      }
-
-      alert("회원가입 중 서버 오류가 발생했습니다.");
+    onError: (error) => {
+      alert(extractErrorMessage(error));
     },
   });
 };
 
-// 로그아웃 mutation
 export const useLogout = () => {
   const navigate = useNavigate();
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
   return useMutation({
     mutationFn: () => authApi.logout(),
-    onSuccess: () => {
-      closeSSE();
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+    onSuccess: async () => {
+      await closeSSE();
+
       clearAuth();
       navigate("/login");
+    },
+    onError: (error) => {
+      alert(extractErrorMessage(error));
     },
   });
 };
 
-// 회원 탈퇴 mutation
 export const useWithdraw = () => {
   const navigate = useNavigate();
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
   return useMutation({
     mutationFn: (data: WithdrawReq) => authApi.withdraw(data),
-    onSuccess: () => {
-      closeSSE();
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+    onSuccess: async () => {
+      await closeSSE();
+
       clearAuth();
       alert("회원탈퇴가 완료되었습니다.");
       navigate("/");
+    },
+    onError: (error) => {
+      alert(extractErrorMessage(error));
     },
   });
 };

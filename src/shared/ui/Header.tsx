@@ -22,7 +22,6 @@ export const Header = () => {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const { data: unreadCount } = useUnreadNotificationCount(isAuthenticated);
 
-  // 로그인 시 SSE 구독 시작, 로그아웃 시 자동 종료
   useNotificationSSE();
 
   const handleLogout = () => {
@@ -56,7 +55,7 @@ export const Header = () => {
     <>
       <HeaderContainer>
         <HeaderInner>
-          {user?.role === "ROLE_USER" && (
+          {(!isAuthenticated || user?.role === "ROLE_USER") && (
             <Logo to="/">
               <img src={logo} alt="플라워러블 로고" width="40" />
               Flowerable

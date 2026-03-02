@@ -1,5 +1,11 @@
 export type Role = "ROLE_USER" | "ROLE_SHOP" | "ROLE_ADMIN";
 
+export const ROLE = {
+  USER: "ROLE_USER",
+  SHOP: "ROLE_SHOP",
+  ADMIN: "ROLE_ADMIN",
+} as const;
+
 export type Provider = "LOCAL" | "KAKAO" | "NAVER" | "GOOGLE";
 
 export type AccountStatus = "ACTIVE" | "SUSPENDED" | "DELETED" | "TEMP";

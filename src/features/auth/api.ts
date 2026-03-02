@@ -9,6 +9,7 @@ import {
   OAuthCompleteRequest,
   WithdrawReq,
 } from "./types";
+import { isAppAxiosError } from "@/shared/types/error";
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
@@ -39,12 +40,14 @@ export const authApi = {
       const response = await axiosInstance.post("/auth/oauth/token", data);
 
       return response.data;
-    } catch (error: any) {
-      console.error("🌐 API Error - exchangeOAuthToken:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
+    } catch (error: unknown) {
+      if (isAppAxiosError(error)) {
+        console.error("🌐 API Error - exchangeOAuthToken:", {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+        });
+      }
       throw error;
     }
   },
@@ -66,10 +69,8 @@ export const authApi = {
     return res.data;
   },
 
-  // 로그아웃
   logout: () => axiosInstance.post("/auth/logout"),
 
-  // 토큰 리프레시
   refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
     const res = await axiosInstance.post<AuthResponse>("/auth/reissue", {
       refreshToken,
@@ -77,13 +78,6 @@ export const authApi = {
     return res.data;
   },
 
-  // 이메일 중복 체크
-  checkEmail: (email: string) =>
-    axiosInstance.get<{ available: boolean }>(
-      `/auth/check-email?email=${email}`,
-    ),
-
-  // 회원 탈퇴
   withdraw: (data: WithdrawReq) => {
     return axiosInstance.post("/auth/withdraw", data);
   },
@@ -94,7 +88,6 @@ export const authApi = {
       .post("/auth/password/forgot", { email })
       .then(() => undefined),
 
-  // 비밀번호 재설정
   resetPassword: (token: string, newPassword: string): Promise<void> =>
     axiosInstance
       .post("/auth/password/reset", { token, newPassword })

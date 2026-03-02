@@ -1,78 +1,54 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
-import { useAuthStore } from "@/features/auth/store";
+import { createBrowserRouter } from "react-router-dom";
 
 // Layouts
-import { MainLayout } from "./layouts/MainLayout";
-import { ShopLayout } from "./layouts/ShopLayout";
-import AdminLayout from "./layouts/AdminLayout";
+import { MainLayout } from "./layouts/MainLayout/MainLayout";
+import { ShopLayout } from "./layouts/ShopLayout/ShopLayout";
+import AdminLayout from "./layouts/AdminLayout/AdminLayout";
 
-// Pages - Auth
-import { LoginPage } from "@/pages/auth/LoginPage";
-import { SignupPage } from "@/pages/auth/SignupPage";
-import { OAuthCompleteProfile } from "@/pages/auth/OAuthCompleteProfile";
-
-// common
+import { LoginPage } from "@/pages/auth/Login/LoginPage";
+import { SignupPage } from "@/pages/auth/Signup/SignupPage";
+import { OAuthCompleteProfile } from "@/pages/auth/OAuthCompleteProfile/OAuthCompleteProfile";
 
 // Pages - User
-import { HomePage } from "@/pages/user/HomePage";
-import { FlowerListPage } from "@/pages/user/FlowerListPage";
-import { ShopListPage } from "@/pages/user/ShopListPage";
-import ShopDetailPage from "@/pages/user/ShopDetailPage";
-import { OrderPage } from "@/pages/user/OrderPage";
-import { CartPage } from "@/pages/user/CartPage";
-import UserOrderDetailPage from "@/pages/user/UserOrderDetailPage";
-import UserOrderListPage from "@/pages/user/UserOrderListPage";
-import { UserProfilePage } from "@/pages/user/UserProfilePage";
-import CheckoutPage from "@/pages/user/CheckoutPage";
-import CartCheckoutPage from "@/pages/user/CartCheckoutPage";
-import PaymentSuccessPage from "@/pages/user/PaymentSuccessPage";
-import PaymentFailPage from "@/pages/user/PaymentFailPage";
+import { HomePage } from "@/pages/user/Home/HomePage";
+import { FlowerListPage } from "@/pages/user/FlowerList/FlowerListPage";
+import { ShopListPage } from "@/pages/user/ShopList/ShopListPage";
+import ShopDetailPage from "@/pages/user/ShopDetail/ShopDetailPage";
+import { OrderPage } from "@/pages/user/Order/OrderPage";
+import { CartPage } from "@/pages/user/Cart/CartPage";
+import UserOrderDetailPage from "@/pages/user/UserOrderDetail/UserOrderDetailPage";
+import UserOrderListPage from "@/pages/user/UserOrderList/UserOrderListPage";
+import { UserProfilePage } from "@/pages/user/UserProfile/UserProfilePage";
+import CheckoutPage from "@/pages/user/Checkout/CheckoutPage";
+import CartCheckoutPage from "@/pages/user/CartCheckout/CartCheckoutPage";
+import PaymentSuccessPage from "@/pages/user/PaymentSuccess/PaymentSuccessPage";
+import PaymentFailPage from "@/pages/user/PaymentFail/PaymentFailPage";
 
 // Pages - Shop
-import { ShopManagePage } from "@/pages/shop/ShopManagePage";
-import ShopOrderListPage from "@/pages/shop/ShopOrderListPage";
-import { ShopFlowerManagePage } from "@/pages/shop/ShopFlowerManagePage";
-import { ShopProfilePage } from "@/pages/shop/ShopProfilePage";
-import { ShopFlowersViewPage } from "@/pages/shop/ShopFlowersViewPage";
-import { ShopFlowerAddPage } from "@/pages/shop/ShopFlowerAddPage";
-import { ShopWrappingPage } from "@/pages/shop/ShopWrappingPage";
-import ShopDashboardPage from "@/pages/shop/ShopDashboardPage";
+import { ShopManagePage } from "@/pages/shop/ShopManage/ShopManagePage";
+import ShopOrderListPage from "@/pages/shop/ShopOrderList/ShopOrderListPage";
+import { ShopFlowerManagePage } from "@/pages/shop/ShopFlowerManage/ShopFlowerManagePage";
+import { ShopProfilePage } from "@/pages/shop/ShopProfile/ShopProfilePage";
+import { ShopFlowersViewPage } from "@/pages/shop/ShopFlowersView/ShopFlowersViewPage";
+import { ShopFlowerAddPage } from "@/pages/shop/ShopFlowerAdd/ShopFlowerAddPage";
+import { ShopWrappingPage } from "@/pages/shop/ShopWrapping/ShopWrappingPage";
+import ShopDashboardPage from "@/pages/shop/ShopDashboard/ShopDashboardPage";
 
 // Pages - Admin
-import OAuthCallback from "@/pages/auth/OAuthCallback";
-import { ShopManageLayout } from "./layouts/ShopManageLayout";
-import ShopOrderDetailPage from "@/pages/shop/ShopOrderDetailPage";
-import { ShopPendingHome } from "@/pages/shop/ShopPendingHome";
-import AdminAccountManagePage from "@/pages/admin/AdminAccountManagePage";
-import AdminShopManagePage from "@/pages/admin/AdminShopManagePage";
-import AdminOrderMonitorPage from "@/pages/admin/AdminOrderMonitorPage";
-import AdminFlowerManagePage from "@/pages/admin/AdminFlowerManagePage";
+import OAuthCallback from "@/pages/auth/OAuthCallback/OAuthCallback";
+import { ShopManageLayout } from "./layouts/ShopManageLayout/ShopManageLayout";
+import ShopOrderDetailPage from "@/pages/shop/ShopOrderDetail/ShopOrderDetailPage";
+import { ShopPendingHome } from "@/pages/shop/ShopPendingHome/ShopPendingHome";
+import AdminAccountManagePage from "@/pages/admin/AdminAccountManage/AdminAccountManagePage";
+import AdminShopManagePage from "@/pages/admin/AdminShopManage/AdminShopManagePage";
+import AdminOrderMonitorPage from "@/pages/admin/AdminOrderMonitor/AdminOrderMonitorPage";
+import AdminFlowerManagePage from "@/pages/admin/AdminFlowerManage/AdminFlowerManagePage";
 import ChatListPage from "@/pages/common/ChatListPage";
-import { ShopImagesPage } from "@/pages/shop/ShopImagesPage";
-import { ShopImagesViewPage } from "@/pages/user/ShopImagesViewPage";
-import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
-import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
-
-// Protected Route Component
-const ProtectedRoute = ({
-  children,
-  allowedRoles,
-}: {
-  children: React.ReactNode;
-  allowedRoles?: string[];
-}) => {
-  const { isAuthenticated, user } = useAuthStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
-};
+import { ShopImagesPage } from "@/pages/shop/ShopImages/ShopImagesPage";
+import { ShopImagesViewPage } from "@/pages/user/ShopImagesView/ShopImagesViewPage";
+import { ForgotPasswordPage } from "@/pages/auth/ForgotPassword/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/pages/auth/ResetPassword/ResetPasswordPage";
+import { ProtectedRoute } from "./routes/ProtectedRoute";
 
 export const router = createBrowserRouter([
   // Public routes

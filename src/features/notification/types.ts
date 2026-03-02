@@ -6,7 +6,7 @@ export enum NotificationType {
   ORDER_CANCELED = "ORDER_CANCELED",
 }
 
-export interface Notification {
+export interface AppNotification {
   id: number;
   receiverId: number;
   receiverType: "USER" | "SHOP";
@@ -17,4 +17,5 @@ export interface Notification {
   isRead: boolean;
   readAt: string | null;
   createdAt: string;
+  updatedAt: string;
 }

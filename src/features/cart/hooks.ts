@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cartApi } from "./api";
 import type { AddToCartRequest } from "./types";
 import { useAuthStore } from "../auth/store";
+import { extractErrorMessage } from "@/shared/utils/errorHandler";
 
-// 장바구니 조회
 export const useCart = () => {
   const userId = useAuthStore((s) => s.user?.id);
 
@@ -15,7 +15,6 @@ export const useCart = () => {
   });
 };
 
-// 장바구니 아이템 개수 조회
 export const useCartCount = (enabled: boolean) => {
   const userId = useAuthStore((s) => s.user?.id);
 
@@ -28,7 +27,6 @@ export const useCartCount = (enabled: boolean) => {
   });
 };
 
-// 장바구니에 추가
 export const useAddToCart = () => {
   const queryClient = useQueryClient();
 
@@ -38,10 +36,12 @@ export const useAddToCart = () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       queryClient.invalidateQueries({ queryKey: ["cart", "count"] });
     },
+    onError: (error) => {
+      alert(extractErrorMessage(error));
+    },
   });
 };
 
-// 장바구니 항목 삭제
 export const useRemoveCartItem = () => {
   const queryClient = useQueryClient();
 
@@ -51,10 +51,12 @@ export const useRemoveCartItem = () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       queryClient.invalidateQueries({ queryKey: ["cart", "count"] });
     },
+    onError: (error) => {
+      alert(extractErrorMessage(error));
+    },
   });
 };
 
-// 장바구니 전체 비우기
 export const useClearCart = () => {
   const queryClient = useQueryClient();
 
@@ -63,6 +65,9 @@ export const useClearCart = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       queryClient.invalidateQueries({ queryKey: ["cart", "count"] });
+    },
+    onError: (error) => {
+      alert(extractErrorMessage(error));
     },
   });
 };

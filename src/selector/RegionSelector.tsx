@@ -7,7 +7,7 @@ import {
   PathValue,
   UseFormSetValue,
 } from "react-hook-form";
-import styled from "styled-components";
+import { InputGroup, Label, Select, ErrorText } from "./RegionSelector.styles";
 
 interface RegionRes {
   code: string;
@@ -38,7 +38,6 @@ export default function RegionSelector<T extends Record<string, any>>({
   const [districts, setDistricts] = useState<DistrictRes[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
 
-  // Region 목록 조회
   useEffect(() => {
     fetch("/api/regions")
       .then((res) => res.json())
@@ -46,7 +45,6 @@ export default function RegionSelector<T extends Record<string, any>>({
       .catch((err) => console.error("Failed to fetch regions:", err));
   }, []);
 
-  // Region 선택 시 District 목록 조회
   useEffect(() => {
     console.log("[useEffect] selectedRegion =", selectedRegion);
     if (selectedRegion) {
@@ -124,42 +122,3 @@ export default function RegionSelector<T extends Record<string, any>>({
     </>
   );
 }
-
-const InputGroup = styled.div`
-  margin-bottom: 20px;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  color: #333;
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  background-color: white;
-
-  &:disabled {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
-    color: #999;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #007bff;
-  }
-`;
-
-const ErrorText = styled.span`
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: #ff4444;
-`;

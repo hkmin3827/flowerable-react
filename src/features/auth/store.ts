@@ -6,11 +6,11 @@ import { AccountStatus } from "@/shared/types";
 interface AuthState {
   isAuthenticated: boolean;
   accountStatus: AccountStatus | null;
-
   accessToken: string | null;
   refreshToken: string | null;
-
   user: UserInfo | null;
+
+  _hasHydrated: boolean;
   setAuth: (data: {
     isAuthenticated: boolean;
     accountStatus: AuthState["accountStatus"];
@@ -28,6 +28,8 @@ interface AuthState {
   updateUser: (user: Partial<UserInfo>) => void;
 
   clearAuth: () => void;
+
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -38,6 +40,7 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
       user: null,
+      _hasHydrated: false,
 
       setAuth: (data) =>
         set({
@@ -66,11 +69,14 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: null,
           user: null,
         }),
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: "auth-storage",
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
       partialize: (state) => ({
-        // 보안상 user는 제외하고 싶으면 여기서 조절 가능
         isAuthenticated: state.isAuthenticated,
         accountStatus: state.accountStatus,
         accessToken: state.accessToken,

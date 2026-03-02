@@ -14,6 +14,7 @@ export interface CartItemInfo {
   cartItemId: number;
   shopId: number;
   shopName: string;
+  shopAddress: string;
   wrappingColorName?: string;
   wrappingExtraPrice?: number;
   message?: string;

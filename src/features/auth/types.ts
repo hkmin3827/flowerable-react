@@ -1,7 +1,5 @@
 import { Role, Provider, AccountStatus, ShopStatus } from "@/shared/types";
 
-// API Request Types
-
 export interface LoginRequest {
   email: string;
   password: string;

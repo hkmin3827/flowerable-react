@@ -1,4 +1,4 @@
-import { AccountStatus, OrderStatus, ShopStatus } from "@/shared/types";
+import { AccountStatus, Color, OrderStatus, ShopStatus } from "@/shared/types";
 
 // 관리자 사용자 타입
 export interface AdminUser {
@@ -97,4 +97,36 @@ export interface OrderSearchParams {
   userId?: number;
   from?: string;
   to?: string;
+}
+
+export interface AdminOrderDetail {
+  orderId: number;
+  status: OrderStatus;
+  orderNumber: string;
+  userId: number;
+  shopId: number;
+  shopName: string;
+  userName: string;
+  shopTelnum: string;
+  userTelnum: string;
+  totalFlowerPrice: number;
+  totalPrice: number;
+  wrappingColorName: string;
+  wrappingExtraPrice: number;
+  createdAt: string;
+  canceledAt?: string;
+  message?: string;
+  cancelBy?: string;
+  cancelReason?: string;
+  items: AdminOrderItemRes[];
+}
+
+export interface AdminOrderItemRes {
+  orderItemId: number;
+  shopFlowerId: number;
+  flowerName: string;
+  quantity: number;
+  flowerColor: Color;
+  basePrice: number;
+  itemTotalPrice: number;
 }

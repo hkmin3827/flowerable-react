@@ -10,6 +10,7 @@ import {
   FlowerCreateReq,
   FlowerUpdateReq,
   OrderSearchParams,
+  AdminOrderDetail,
 } from "./types";
 
 // 사용자 관리 API
@@ -42,7 +43,7 @@ export const adminShopAPI = {
     page: number = 0,
     size: number = 20,
   ) => {
-    const params: any = { page, size };
+    const params: Record<string, string | number | undefined> = { page, size };
 
     if (shopStatus) params.shopStatus = shopStatus;
     if (accountStatus) params.accountStatus = accountStatus;
@@ -105,5 +106,5 @@ export const adminOrderAPI = {
     }),
 
   getOrderDetail: (orderId: number) =>
-    axiosInstance.get<any>(`/admin/orders/${orderId}`),
+    axiosInstance.get<AdminOrderDetail>(`/admin/orders/${orderId}`),
 };
