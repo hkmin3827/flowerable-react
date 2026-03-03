@@ -19,7 +19,6 @@ import {
   InfoText,
   FlowerList,
   FlowerItem,
-  FlowerImage,
   FlowerInfo,
   FlowerName,
   FlowerDetail,

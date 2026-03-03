@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/shared/api/axios";
 import { useAuthStore } from "@/features/auth/store";

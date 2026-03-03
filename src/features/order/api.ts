@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/shared/api/axios";
-import { PageResponse, OrderStatus } from "@/shared/types";
+import { PageResponse } from "@/shared/types";
 import {
   OrderCreateReq,
   OrderDetail,
