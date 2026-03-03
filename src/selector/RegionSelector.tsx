@@ -8,6 +8,7 @@ import {
   UseFormSetValue,
 } from "react-hook-form";
 import { InputGroup, Label, Select, ErrorText } from "./RegionSelector.styles";
+import { axiosInstance } from "@/shared/api/axios";
 
 interface RegionRes {
   code: string;
@@ -39,21 +40,19 @@ export default function RegionSelector<T extends Record<string, any>>({
   const [selectedRegion, setSelectedRegion] = useState<string>("");
 
   useEffect(() => {
-    fetch("/api/regions")
-      .then((res) => res.json())
-      .then((data) => setRegions(data))
+    axiosInstance
+      .get("/regions")
+      .then((res) => setRegions(res.data))
       .catch((err) => console.error("Failed to fetch regions:", err));
   }, []);
 
   useEffect(() => {
     console.log("[useEffect] selectedRegion =", selectedRegion);
     if (selectedRegion) {
-      fetch(`/api/regions/districts?region=${selectedRegion}`)
+      axiosInstance
+        .get(`/regions/districts?region=${selectedRegion}`)
         .then((res) => {
-          return res.json();
-        })
-        .then((data) => {
-          setDistricts(data);
+          setDistricts(res.data);
         })
         .catch((err) => console.error("Failed to fetch districts:", err));
     } else {
