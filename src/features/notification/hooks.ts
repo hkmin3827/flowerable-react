@@ -141,6 +141,6 @@ export const useUnreadNotificationCount = (enabled: boolean) => {
       return res.data;
     },
     enabled,
-    refetchInterval: 30000,
+    refetchInterval: 10000,
   });
 };

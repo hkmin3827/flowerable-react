@@ -2,15 +2,22 @@
 
 > 꽃 주문 플랫폼 프론트엔드 - Production-Grade React Architecture
 
+---
+
+[flowerable 구경하러 가기](https://flowerable-react.vercel.app)
+
+- 테스트 계정 : test@flowerable.com
+- 테스트 비밀번호 : t12341234
+
 ## 🏗️ 아키텍처 철학
 
 이 프로젝트는 **실무 프론트엔드 아키텍처**를 목표로 설계되었습니다.
 백엔드의 Controller → Service → Repository 레이어 분리를 프론트엔드에 맞게 적용했습니다.
 
 ```
-Presentation Layer (Pages/Components) 
+Presentation Layer (Pages/Components)
     ↓
-Business Logic Layer (Hooks) 
+Business Logic Layer (Hooks)
     ↓
 Data Access Layer (API Functions)
 ```
@@ -31,7 +38,7 @@ src/
 │   └── admin/
 │
 ├── features/              # 도메인 단위 기능
-│   ├── auth/              
+│   ├── auth/
 │   │   ├── api.ts         # API 호출 함수
 │   │   ├── hooks.ts       # React Query hooks
 │   │   ├── store.ts       # Zustand store (필요시)
@@ -59,23 +66,23 @@ src/
 // ❌ Bad - 페이지에서 API 직접 호출
 const UserPage = () => {
   const [data, setData] = useState(null);
-  
+
   useEffect(() => {
-    axios.get('/api/users/me').then(res => setData(res.data));
+    axios.get("/api/users/me").then((res) => setData(res.data));
   }, []);
 };
 
 // ✅ Good - 레이어 분리
 // features/user/api.ts
 export const userApi = {
-  getMe: () => apiClient.get('/users/me')
+  getMe: () => apiClient.get("/users/me"),
 };
 
 // features/user/hooks.ts
 export const useMe = () => {
   return useQuery({
-    queryKey: ['user', 'me'],
-    queryFn: userApi.getMe
+    queryKey: ["user", "me"],
+    queryFn: userApi.getMe,
   });
 };
 
@@ -94,20 +101,21 @@ const UserPage = () => {
 export interface UserResponse {
   id: number;
   email: string;
-  createdAt: string;  // ISO string
+  createdAt: string; // ISO string
 }
 
 // UI에서 사용하는 도메인 타입
 export interface User {
   id: number;
   email: string;
-  createdAt: Date;     // Date 객체로 변환
+  createdAt: Date; // Date 객체로 변환
 }
 ```
 
 ### 3. **Zustand는 필요할 때만**
 
 전역 상태가 진짜 필요한 경우에만 사용:
+
 - 인증 상태 (여러 곳에서 접근)
 - 장바구니 (LocalStorage 동기화 필요)
 
@@ -118,17 +126,17 @@ export interface User {
 ```typescript
 // ✅ API 함수는 response.data만 반환
 export const orderApi = {
-  create: (data: OrderRequest) => 
-    apiClient.post<OrderResponse>('/orders', data)
+  create: (data: OrderRequest) =>
+    apiClient.post<OrderResponse>("/orders", data),
 };
 
 // ❌ API 함수에서 부가 작업 금지
 export const orderApi = {
   create: (data: OrderRequest) => {
-    const res = apiClient.post('/orders', data);
-    toast.success('주문 완료'); // ❌
+    const res = apiClient.post("/orders", data);
+    toast.success("주문 완료"); // ❌
     return res;
-  }
+  },
 };
 ```
 
@@ -146,21 +154,25 @@ export const orderApi = {
 ## 🚀 시작하기
 
 ### 설치
+
 ```bash
 npm install
 ```
 
 ### 개발 서버 실행
+
 ```bash
 npm run dev
 ```
 
 ### 빌드
+
 ```bash
 npm run build
 ```
 
 ### 타입 체크
+
 ```bash
 npm run type-check
 ```
@@ -168,23 +180,26 @@ npm run type-check
 ## 📝 컨벤션
 
 ### 파일 명명
+
 - 컴포넌트: PascalCase (예: `LoginForm.tsx`)
 - 훅/유틸: camelCase (예: `useAuth.ts`, `formatDate.ts`)
 - 타입 파일: `types.ts`
 
 ### Import 순서
+
 ```typescript
 // 1. React 관련
-import { useState } from 'react';
+import { useState } from "react";
 // 2. 외부 라이브러리
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 // 3. 내부 모듈
-import { userApi } from './api';
+import { userApi } from "./api";
 // 4. 타입
-import { User } from './types';
+import { User } from "./types";
 ```
 
 ### 컴포넌트 구조
+
 ```typescript
 // 1. Import
 import { ... } from '...';
@@ -197,13 +212,13 @@ export const MyComponent = ({ ... }: Props) => {
   // 3-1. Hooks
   const navigate = useNavigate();
   const { data } = useQuery(...);
-  
+
   // 3-2. State
   const [state, setState] = useState();
-  
+
   // 3-3. Handlers
   const handleClick = () => { ... };
-  
+
   // 3-4. Render
   return <div>...</div>;
 };
