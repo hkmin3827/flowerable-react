@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const Container = styled.div`
   max-width: 1000px;
@@ -113,6 +113,12 @@ export const SelectionItem = styled.div`
   background: #f3f5ff;
   border-radius: 0.5rem;
   border: 1px solid #6b88f4;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 `;
 
 export const SelectionInfo = styled.div`
@@ -121,6 +127,10 @@ export const SelectionInfo = styled.div`
   gap: 1rem;
   font-size: 0.9rem;
   color: #374151;
+  @media (max-width: 480px) {
+    width: 100%;
+    justify-content: space-between;
+  }
 `;
 
 export const QuantityControl = styled.div`
@@ -155,6 +165,10 @@ export const SelectionPrice = styled.div`
   gap: 0.75rem;
   font-weight: 600;
   color: #111827;
+  @media (max-width: 480px) {
+    width: 100%;
+    justify-content: space-between;
+  }
 `;
 
 export const RemoveButton = styled.button`
@@ -209,6 +223,7 @@ export const AddToCartButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  word-break: keep-all;
   &:hover {
     background: #f3f5ff;
   }

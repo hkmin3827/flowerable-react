@@ -77,7 +77,6 @@ export const Header = () => {
             </Logo>
           )}
 
-          {/* 데스크탑 네비 */}
           <DesktopNav>
             {user?.role === "ROLE_USER" && (
               <>
@@ -176,12 +175,10 @@ export const Header = () => {
             )}
           </DesktopActions>
 
-          {/* 모바일 햄버거 */}
           <Hamburger onClick={() => setMenuOpen(!menuOpen)}>☰</Hamburger>
         </HeaderInner>
       </HeaderContainer>
 
-      {/* 모바일 슬라이드 메뉴 */}
       <Overlay $open={menuOpen} onClick={closeMenu} />
 
       <MobileMenu $open={menuOpen}>
@@ -206,7 +203,7 @@ export const Header = () => {
                 실시간 문의
               </MobileLink>
               <MobileLink to="/cart" onClick={closeMenu}>
-                장바구니{" "}
+                장바구니
                 {cartCount && cartCount.count > 0 && (
                   <CartBadge>{cartCount.count}</CartBadge>
                 )}
@@ -290,7 +287,6 @@ export const Header = () => {
             </>
           )}
 
-          {/* 최하단 로그아웃 */}
           {isAuthenticated && (
             <BottomLogout>
               <MobileButton onClick={handleLogout}>로그아웃</MobileButton>
@@ -434,6 +430,9 @@ const MobileUserName = styled.div`
 const MobileLink = styled(Link)`
   padding: 0.75rem 0;
   font-weight: 500;
+  position: relative;
+  display: flex;
+  align-items: center;
 `;
 
 const BottomLogout = styled.div`

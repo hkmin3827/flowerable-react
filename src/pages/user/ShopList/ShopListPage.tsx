@@ -228,7 +228,7 @@ export const ShopListPage = () => {
                 <ShopInfo>
                   <InfoItem>
                     <InfoIcon>📍</InfoIcon>
-                    {shop.address}
+                    {shop.regionDesc} {shop.districtDesc} {shop.address}
                   </InfoItem>
                   <InfoItem>
                     <InfoIcon>📞</InfoIcon>

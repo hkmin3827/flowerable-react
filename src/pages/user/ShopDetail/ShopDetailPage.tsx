@@ -182,7 +182,9 @@ const ShopDetailPage: React.FC = () => {
           <InfoGroup>
             <InfoItem>
               <MapPin size={20} />
-              <span>{shop.address}</span>
+              <span>
+                {shop.regionDesc} {shop.districtDesc} {shop.address}
+              </span>
             </InfoItem>
             <InfoItem>
               <Phone size={20} />
