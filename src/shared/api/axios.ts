@@ -1,10 +1,10 @@
 import { useAuthStore } from "@/features/auth/store";
+import { reconnectSSE } from "@/features/notification/hooks";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 let isRefreshing = false;
 let refreshPromise: Promise<any> | null = null;
 
-// Axios instance 생성
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
   timeout: 10000,
@@ -17,7 +17,6 @@ const reissueAxios = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
 });
 
-// Request interceptor
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const accessToken = useAuthStore.getState().accessToken;
@@ -87,6 +86,8 @@ axiosInstance.interceptors.response.use(
         });
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+        reconnectSSE(accessToken);
 
         return axiosInstance(originalRequest);
       } catch (reissueError) {
