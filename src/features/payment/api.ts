@@ -3,5 +3,7 @@ import type { PaymentConfirmReq, PaymentConfirmRes } from "./types";
 
 export const paymentAPI = {
   confirm: (req: PaymentConfirmReq) =>
-    axiosInstance.post<PaymentConfirmRes>("/payments/confirm", req),
+    axiosInstance.post<PaymentConfirmRes>("/payments/confirm", req, {
+      timeout: 15000,
+    }),
 };
