@@ -3,12 +3,6 @@
 > 꽃 주문 플랫폼 프론트엔드 - Production-Grade React Architecture
 
 ---
-
-[flowerable 구경하러 가기](https://flowerable-react.vercel.app/login)
-
-- 테스트 계정 : test@flowerable.com
-- 테스트 비밀번호 : t12341234
-
 ## 🏗️ 아키텍처 철학
 
 이 프로젝트는 **실무 프론트엔드 아키텍처**를 목표로 설계되었습니다.
