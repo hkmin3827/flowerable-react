@@ -111,7 +111,6 @@ const ShopDashboardPage: React.FC = () => {
           )}
         </Card>
 
-        {/* 인기 꽃 */}
         <Card>
           <CardHeader>
             <h2>인기 꽃 Top 5</h2>

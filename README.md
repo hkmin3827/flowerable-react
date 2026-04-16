@@ -58,255 +58,94 @@ src/
     └── constants/         # 상수
 ```
 
-## 🎯 핵심 설계 원칙
-
-### 1. **레이어 분리 엄수**
-
-```typescript
-// ❌ Bad - 페이지에서 API 직접 호출
-const UserPage = () => {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    axios.get("/api/users/me").then((res) => setData(res.data));
-  }, []);
-};
-
-// ✅ Good - 레이어 분리
-// features/user/api.ts
-export const userApi = {
-  getMe: () => apiClient.get("/users/me"),
-};
-
-// features/user/hooks.ts
-export const useMe = () => {
-  return useQuery({
-    queryKey: ["user", "me"],
-    queryFn: userApi.getMe,
-  });
-};
-
-// pages/UserPage.tsx
-const UserPage = () => {
-  const { data } = useMe();
-  // ...
-};
-```
-
-### 2. **타입 명확히 분리**
-
-```typescript
-// types.ts
-// API 응답 타입 (서버 스펙 그대로)
-export interface UserResponse {
-  id: number;
-  email: string;
-  createdAt: string; // ISO string
-}
-
-// UI에서 사용하는 도메인 타입
-export interface User {
-  id: number;
-  email: string;
-  createdAt: Date; // Date 객체로 변환
-}
-```
-
-### 3. **Zustand는 필요할 때만**
-
-전역 상태가 진짜 필요한 경우에만 사용:
-
-- 인증 상태 (여러 곳에서 접근)
-- 장바구니 (LocalStorage 동기화 필요)
-
-**서버 상태는 React Query로 관리**하므로 Zustand에 중복 저장하지 않습니다.
-
-### 4. **API 함수는 순수하게**
-
-```typescript
-// ✅ API 함수는 response.data만 반환
-export const orderApi = {
-  create: (data: OrderRequest) =>
-    apiClient.post<OrderResponse>("/orders", data),
-};
-
-// ❌ API 함수에서 부가 작업 금지
-export const orderApi = {
-  create: (data: OrderRequest) => {
-    const res = apiClient.post("/orders", data);
-    toast.success("주문 완료"); // ❌
-    return res;
-  },
-};
-```
-
 ## 🔧 기술 스택
 
-- **React 18** + **TypeScript**
-- **Vite** (빌드 도구)
-- **React Router v6** (라우팅)
-- **TanStack Query** (서버 상태 관리)
-- **Zustand** (클라이언트 상태 관리)
-- **styled-components** (CSS-in-JS)
-- **React Hook Form** (폼 관리)
-- **Axios** (HTTP 클라이언트)
-
-## 🚀 시작하기
-
-### 설치
-
-```bash
-npm install
-```
-
-### 개발 서버 실행
-
-```bash
-npm run dev
-```
-
-### 빌드
-
-```bash
-npm run build
-```
-
-### 타입 체크
-
-```bash
-npm run type-check
-```
-
-## 📝 컨벤션
-
-### 파일 명명
-
-- 컴포넌트: PascalCase (예: `LoginForm.tsx`)
-- 훅/유틸: camelCase (예: `useAuth.ts`, `formatDate.ts`)
-- 타입 파일: `types.ts`
-
-### Import 순서
-
-```typescript
-// 1. React 관련
-import { useState } from "react";
-// 2. 외부 라이브러리
-import { useQuery } from "@tanstack/react-query";
-// 3. 내부 모듈
-import { userApi } from "./api";
-// 4. 타입
-import { User } from "./types";
-```
-
-### 컴포넌트 구조
-
-```typescript
-// 1. Import
-import { ... } from '...';
-
-// 2. Types
-interface Props { ... }
-
-// 3. Component
-export const MyComponent = ({ ... }: Props) => {
-  // 3-1. Hooks
-  const navigate = useNavigate();
-  const { data } = useQuery(...);
-
-  // 3-2. State
-  const [state, setState] = useState();
-
-  // 3-3. Handlers
-  const handleClick = () => { ... };
-
-  // 3-4. Render
-  return <div>...</div>;
-};
-
-// 4. Styled Components
-const Container = styled.div`...`;
-```
-
-## 🗂️ Feature 구조 예시
-
-```
-features/order/
-├── api.ts              # API 호출 함수
-├── hooks.ts            # React Query hooks
-├── store.ts            # 장바구니 상태 (Zustand)
-├── types.ts            # 주문 관련 타입
-└── components.tsx      # 주문 관련 UI 컴포넌트
-```
-
-## ⚠️ 주의사항
-
-### ❌ 금지 사항
-
-1. **페이지에서 API 직접 호출 금지**
-2. **컴포넌트에서 비즈니스 로직 작성 금지**
-3. **API 응답을 그대로 UI에 노출 금지** (타입 변환 필요)
-4. **전역 상태 남발 금지** (서버 상태는 React Query)
-5. **파일을 과도하게 분리하지 말 것** (도메인 단위로 응집)
-
-### ✅ 권장 사항
-
-1. **API 함수는 feature/{domain}/api.ts에만 작성**
-2. **React Query 훅은 feature/{domain}/hooks.ts에만 작성**
-3. **비즈니스 로직은 커스텀 훅으로 추출**
-4. **타입은 명확히 분리** (API Response vs Domain Model)
-5. **에러 처리는 React Query의 onError 활용**
-
-## 🎨 스타일링 가이드
-
-styled-components 사용 시:
-
-```typescript
-// ✅ Props는 $prefix 사용
-const Button = styled.button<{ $primary?: boolean }>`
-  background: ${({ $primary }) => $primary ? 'blue' : 'gray'};
-`;
-
-// ✅ 테마 색상은 변수로 분리
-const colors = {
-  primary: '#3b82f6',
-  gray: '#6b7280',
-};
-
-// ❌ 인라인 스타일 지양
-<div style={{ color: 'red' }}>Text</div>
-```
-
-## 🔐 인증 플로우
-
-1. 로그인 → `accessToken`, `refreshToken` 저장
-2. Axios interceptor에서 자동으로 토큰 첨부
-3. 401 응답 시 자동 리프레시 시도
-4. 리프레시 실패 시 로그인 페이지로 리다이렉트
-
-## 📦 배포
-
-```bash
-# 프로덕션 빌드
-npm run build
-
-# 빌드 결과는 dist/ 폴더에 생성됨
-```
-
-## 🤝 기여 가이드
-
-1. feature 브랜치 생성
-2. 레이어 분리 원칙 준수
-3. ESLint 규칙 통과
-4. 타입 체크 통과
-5. PR 생성
-
-## 📚 참고 자료
-
-- [React Query 공식 문서](https://tanstack.com/query/latest)
-- [Zustand 공식 문서](https://github.com/pmndrs/zustand)
-- [React Router 공식 문서](https://reactrouter.com/)
-- [styled-components 공식 문서](https://styled-components.com/)
+| 영역 | 사용 기술 |
+|---|---|
+| 언어 / 빌드 | React 18, TypeScript, Vite |
+| 라우팅 | React Router v6 |
+| 서버 상태 | TanStack Query (React Query) |
+| 클라이언트 상태 | Zustand |
+| 스타일 | styled-components |
+| 폼 | React Hook Form |
+| HTTP | Axios |
+| 결제 | TossPayments SDK |
+| 실시간 알림 | SSE (Server-Sent Events) |
 
 ---
 
-**이 구조는 실무에서 바로 사용 가능한 프로덕션 레벨의 아키텍처입니다.**
+## 🔐 인증 흐름
+
+로그인 성공 시 서버에서 `accessToken` / `refreshToken`을 발급받아 저장합니다.  
+이후 모든 API 요청은 Axios 인터셉터가 자동으로 토큰을 헤더에 붙여 전송합니다.
+
+```
+로그인
+  └─ accessToken + refreshToken 저장
+       └─ Axios request interceptor → Authorization 헤더 자동 주입
+            └─ 401 응답 감지 → refreshToken으로 토큰 재발급
+                 ├─ 성공 → 새 토큰으로 원래 요청 재시도 + SSE 재연결
+                 └─ 실패 → 로그아웃 처리 후 로그인 페이지로 리다이렉트
+```
+
+토큰 재발급 시 SSE 연결도 새 토큰으로 재연결합니다.  
+재발급 중 동시에 여러 요청이 들어오면 큐에 쌓아두고 토큰 갱신 완료 후 일괄 처리합니다.
+
+---
+
+## 🛒 주문 · 결제 흐름
+
+TossPayments SDK를 사용한 결제 위젯 방식으로 구현되어 있습니다.
+
+```
+장바구니 담기 (Zustand + LocalStorage 동기화)
+  └─ 주문서 작성 (배송지, 요청사항 입력)
+       └─ TossPayments 결제 위젯 렌더링
+            └─ 결제 요청 → TossPayments 결제창
+                 ├─ 성공 → /payment/success?paymentKey=...&orderId=...
+                 │          └─ 서버 결제 승인 API 호출 (타임아웃 15초)
+                 │               └─ 주문 완료 페이지 이동
+                 └─ 실패 → /payment/fail
+                            └─ 실패 사유 표시 (TossPayments 응답 + Spring 응답 통합)
+```
+
+결제 타임아웃은 TossPayments 서버 타임아웃(10초)을 고려해 클라이언트에서 15초로 명시 설정합니다.
+
+---
+
+## 🔔 실시간 알림 흐름
+
+SSE(Server-Sent Events)를 통해 실시간 알림을 수신합니다.
+
+```
+로그인 완료
+  └─ SSE 연결 수립 (EventSource + accessToken)
+       └─ 서버 이벤트 수신 → 알림 목록 업데이트
+            └─ 헤더의 읽지 않은 알림 수 실시간 반영
+```
+
+토큰 재발급 시 기존 SSE 연결을 닫고 새 토큰으로 재연결합니다.
+
+---
+
+## 🏪 쇼핑 · 꽃집 탐색 흐름
+
+```
+메인 페이지
+  └─ 꽃집 목록 (위치 기반 또는 전체)
+       └─ 꽃집 상세 → 상품 목록
+            └─ 상품 상세 → 장바구니 담기 또는 바로 주문
+```
+
+꽃집 목록과 상품 데이터는 React Query로 캐싱 관리하며,  
+어드민 페이지에서는 꽃집 등록 / 상품 관리 / 주문 처리가 가능합니다.
+
+---
+
+## 🚀 시작하기
+
+```bash
+npm install
+npm run dev    # 개발 서버 (포트 3000)
+npm run build  # 프로덕션 빌드 → dist/
+```

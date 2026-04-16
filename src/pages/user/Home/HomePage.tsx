@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useAIChatbotStore } from "@/features/ai-chatbot/store";
 import {
   Container,
   Hero,
@@ -10,10 +11,14 @@ import {
   FeatureIcon,
   FeatureTitle,
   FeatureDescription,
+  AIChatbotFeature,
+  NewBadge,
 } from "./HomePage.styles";
+import logo from "@/images/logos/flowerable로고배경제거.png";
 
 export const HomePage = () => {
   const navigate = useNavigate();
+  const { toggle: toggleChatbot } = useAIChatbotStore();
 
   return (
     <Container>
@@ -28,6 +33,19 @@ export const HomePage = () => {
       </Hero>
 
       <Features>
+        <AIChatbotFeature onClick={toggleChatbot}>
+          <FeatureIcon>
+            <img src={logo} alt="플라워러블 로고" />
+          </FeatureIcon>
+          <FeatureTitle>
+            플라워러블 꽃 추천 챗봇
+            <NewBadge>NEW</NewBadge>
+          </FeatureTitle>
+          <FeatureDescription>
+            어떤 상황인지 알려주시면 어울리는 꽃과 가까운 꽃집을 찾아드려요
+          </FeatureDescription>
+        </AIChatbotFeature>
+
         <Feature>
           <FeatureIcon>🌸</FeatureIcon>
           <FeatureTitle>다양한 꽃</FeatureTitle>

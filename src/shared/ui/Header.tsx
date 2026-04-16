@@ -10,6 +10,7 @@ import {
   useUnreadNotificationCount,
   useNotificationSSE,
 } from "@/features/notification/hooks";
+import { useAIChatbotStore } from "@/features/ai-chatbot/store";
 
 export const Header = () => {
   const { isAuthenticated, user } = useAuthStore();
@@ -21,6 +22,7 @@ export const Header = () => {
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const { data: unreadCount } = useUnreadNotificationCount(isAuthenticated);
+  const { toggle: toggleChatbot } = useAIChatbotStore();
 
   useNotificationSSE();
 
@@ -219,7 +221,6 @@ export const Header = () => {
               <MobileLink to="/shop/flowers-view" onClick={closeMenu}>
                 꽃 조회
               </MobileLink>
-              {/* 샵 관리 드롭다운 */}
               <DropdownButton onClick={() => setShopMenuOpen(!shopMenuOpen)}>
                 샵 관리
                 <Arrow $open={shopMenuOpen}>▾</Arrow>
@@ -285,6 +286,17 @@ export const Header = () => {
                 회원가입
               </MobileButton>
             </>
+          )}
+
+          {user?.role === "ROLE_USER" && (
+            <MobileAIChatbotBtn
+              onClick={() => {
+                toggleChatbot();
+                closeMenu();
+              }}
+            >
+              <img src={logo} alt="로고" /> 꽃 추천 챗봇
+            </MobileAIChatbotBtn>
           )}
 
           {isAuthenticated && (
@@ -574,4 +586,23 @@ const NotificationBadge = styled.span`
   justify-content: center;
   font-size: 0.7rem;
   font-weight: 600;
+`;
+
+const MobileAIChatbotBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+
+  img {
+    width: 20px;
+  }
 `;

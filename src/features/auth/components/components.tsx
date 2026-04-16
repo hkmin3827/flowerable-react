@@ -36,7 +36,8 @@ export const LoginForm = ({ role }: LoginFormProps) => {
   const { mutate: login, isPending } = useLogin();
   const [showPassword, setShowPassword] = useState(false);
 
-  const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
+  const VITE_BASE_URL =
+    import.meta.env.VITE_BASE_URL || "http://localhost:3000";
 
   const onSubmit = (data: LoginRequest) => {
     login({
